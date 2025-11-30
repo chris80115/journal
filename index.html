@@ -37,10 +37,9 @@
             background-color: #F3E5AB; color: #8C7323; font-weight: bold;
             transition: all 0.2s; margin-top: 4px; display: inline-block;
         }
-
-        /* 徽章動畫 */
         @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .badge-unlock { animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        input[type="file"] { display: none; }
     </style>
 </head>
 <body class="flex justify-center min-h-screen">
@@ -102,29 +101,56 @@
                         <span class="text-xs font-serif text-subtle italic">Archive (Tap pencil to edit)</span>
                         <div class="h-px bg-ink/10 flex-1"></div>
                     </div>
-                    
-                    <div id="archive-list" class="flex flex-col gap-4 pb-10">
-                        </div>
+                    <div id="archive-list" class="flex flex-col gap-4 pb-10"></div>
                 </section>
             </main>
 
             <main id="view-profile" class="hidden-view flex-1 overflow-y-auto pb-24 no-scrollbar bg-paper">
+                
                 <section class="px-6 pt-10 pb-6 text-center relative">
                     <div id="profile-display">
                         <div class="relative inline-block mb-4">
                             <img id="display-avatar" src="" class="w-24 h-24 rounded-full border-4 border-white shadow-soft object-cover bg-gray-200">
                         </div>
                         <h2 class="font-serif text-2xl font-bold text-ink" id="display-name">User</h2>
+                        <p class="text-xs text-subtle mt-1"><span id="display-gender">--</span> • <span id="display-age">--</span> 歲</p>
                         <button onclick="toggleEditProfile()" class="mt-4 text-xs border border-ink/20 px-3 py-1 rounded-full hover:bg-white transition-colors"><i class="fa-solid fa-pen mr-1"></i> 編輯資料</button>
                     </div>
+
                     <div id="profile-edit" class="hidden bg-white p-6 rounded-2xl shadow-soft text-left">
                         <h3 class="font-bold text-ink mb-4 text-sm">編輯個人資料</h3>
+                        
+                        <div class="mb-4 text-center">
+                            <label for="avatar-upload" class="relative inline-block cursor-pointer group">
+                                <img id="preview-avatar" src="" class="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 object-cover group-hover:border-gold transition-colors">
+                                <div class="absolute inset-0 flex items-center justify-center bg-black/30 rounded-full opacity-0 group-hover:opacity-100 transition-opacity text-white text-xs">
+                                    <i class="fa-solid fa-camera"></i>
+                                </div>
+                            </label>
+                            <input type="file" id="avatar-upload" accept="image/*" onchange="previewImage(this)">
+                            <p class="text-[10px] text-gray-400 mt-1">點擊圖片上傳</p>
+                        </div>
+
                         <div class="space-y-3">
-                            <div><label class="text-[10px] uppercase text-subtle">暱稱</label><input type="text" id="edit-name" class="w-full border-b py-1 text-sm"></div>
-                            <div><label class="text-[10px] uppercase text-subtle">頭像 URL</label><input type="text" id="edit-photo" class="w-full border-b py-1 text-sm"></div>
+                            <div><label class="text-[10px] uppercase text-subtle">暱稱</label><input type="text" id="edit-name" class="w-full border-b py-1 text-sm outline-none focus:border-gold"></div>
+                            
+                            <div class="flex gap-4">
+                                <div class="flex-1">
+                                    <label class="text-[10px] uppercase text-subtle">性別</label>
+                                    <select id="edit-gender" class="w-full border-b py-1 text-sm bg-transparent outline-none focus:border-gold">
+                                        <option value="保密">保密</option>
+                                        <option value="男性">男性</option>
+                                        <option value="女性">女性</option>
+                                    </select>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="text-[10px] uppercase text-subtle">年齡</label>
+                                    <input type="number" id="edit-age" class="w-full border-b py-1 text-sm outline-none focus:border-gold">
+                                </div>
+                            </div>
                         </div>
                         <div class="flex gap-2 mt-6">
-                            <button onclick="saveProfile()" class="flex-1 bg-ink text-white py-2 rounded-lg text-xs font-bold">儲存</button>
+                            <button id="btn-save-profile" onclick="saveProfile()" class="flex-1 bg-ink text-white py-2 rounded-lg text-xs font-bold shadow-md">儲存變更</button>
                             <button onclick="toggleEditProfile()" class="flex-1 border py-2 rounded-lg text-xs">取消</button>
                         </div>
                     </div>
@@ -144,33 +170,19 @@
                 </section>
 
                 <section class="px-6 mb-8">
-                    <h3 class="font-bold text-ink text-sm mb-3">Writing Activity</h3>
-                    <div class="bg-white p-4 rounded-2xl shadow-soft overflow-x-auto">
-                        <div class="flex gap-1 h-24 items-end" id="heatmap-container"></div>
-                    </div>
-                </section>
-
-                <section class="px-6 mb-8">
                     <h3 class="font-bold text-ink text-sm mb-3">Achievements</h3>
-                    <div class="grid grid-cols-3 gap-3" id="badge-wall">
-                        </div>
+                    <div class="grid grid-cols-3 gap-3" id="badge-wall"></div>
                 </section>
 
                 <section class="px-6 mb-12 mt-8 border-t border-ink/10 pt-8">
                     <h3 class="font-bold text-red-500 text-sm mb-2">危險區域 (Danger Zone)</h3>
-                    <button onclick="showResetModal()" class="w-full border border-red-200 text-red-500 py-3 rounded-xl text-sm font-bold hover:bg-red-50 transition-colors">
-                        <i class="fa-solid fa-trash-can mr-2"></i> 重置所有資料
-                    </button>
+                    <button onclick="showResetModal()" class="w-full border border-red-200 text-red-500 py-3 rounded-xl text-sm font-bold hover:bg-red-50 transition-colors"><i class="fa-solid fa-trash-can mr-2"></i> 重置所有資料</button>
                 </section>
             </main>
 
             <nav class="bg-white/90 backdrop-blur-md border-t border-gray-100 h-20 px-8 flex justify-between items-center fixed bottom-0 w-full max-w-md pb-2 z-40">
-                <button id="nav-journal" class="nav-btn active flex flex-col items-center gap-1 w-16" onclick="switchTab('journal')">
-                    <i class="fa-solid fa-book-open text-xl"></i><span class="text-[10px]">Journal</span>
-                </button>
-                <button id="nav-profile" class="nav-btn flex flex-col items-center gap-1 w-16" onclick="switchTab('profile')">
-                    <i class="fa-solid fa-chart-simple text-xl"></i><span class="text-[10px]">Stats</span>
-                </button>
+                <button id="nav-journal" class="nav-btn active flex flex-col items-center gap-1 w-16" onclick="switchTab('journal')"><i class="fa-solid fa-book-open text-xl"></i><span class="text-[10px]">Journal</span></button>
+                <button id="nav-profile" class="nav-btn flex flex-col items-center gap-1 w-16" onclick="switchTab('profile')"><i class="fa-solid fa-chart-simple text-xl"></i><span class="text-[10px]">Stats</span></button>
             </nav>
         </div>
 
@@ -188,7 +200,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <script type="module">
@@ -218,267 +229,180 @@
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         const getMDString = (date) => `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
 
-        // --- 1. 日期控制 ---
-        function updateDateUI() {
-            const m = months[currentDisplayDate.getMonth()];
-            const d = currentDisplayDate.getDate();
-            const w = days[currentDisplayDate.getDay()];
-            document.getElementById('header-date').innerText = `${m} ${d}`;
-            document.getElementById('header-weekday').innerText = w;
-            const today = new Date();
-            const isToday = (today.getDate() === d && today.getMonth() === currentDisplayDate.getMonth());
-            document.getElementById('btn-back-today').classList.toggle('opacity-0', isToday);
-            document.getElementById('btn-back-today').classList.toggle('pointer-events-none', isToday);
-            loadEntriesForDate();
-        }
+        // ... (Date, Entry, Stats 邏輯與之前相同，省略重複部分以節省空間) ...
+        function updateDateUI() {const m = months[currentDisplayDate.getMonth()];const d = currentDisplayDate.getDate();const w = days[currentDisplayDate.getDay()];document.getElementById('header-date').innerText = `${m} ${d}`;document.getElementById('header-weekday').innerText = w;const today = new Date();const isToday = (today.getDate() === d && today.getMonth() === currentDisplayDate.getMonth());document.getElementById('btn-back-today').classList.toggle('opacity-0', isToday);document.getElementById('btn-back-today').classList.toggle('pointer-events-none', isToday);loadEntriesForDate();}
         window.changeDate = (offset) => { currentDisplayDate.setDate(currentDisplayDate.getDate() + offset); updateDateUI(); };
         window.resetToToday = () => { currentDisplayDate = new Date(); updateDateUI(); };
 
-        // --- 2. 讀取與列表 (View Mode / Edit Mode) ---
-        // 我們需要一個全域變數來暫存當前資料，以便 Append 時使用
-        let currentEntriesCache = {}; 
-
+        // Entry Logic
+        let currentEntriesCache = {};
         async function loadEntriesForDate() {
             if (!currentUser) return;
             const listContainer = document.getElementById('archive-list');
             const targetMD = getMDString(currentDisplayDate);
             const currentYear = currentDisplayDate.getFullYear();
-
-            // 清空緩存
             currentEntriesCache = {};
-
             try {
                 const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid), where("monthDay", "==", targetMD));
                 const snapshot = await getDocs(q);
                 snapshot.forEach(doc => { currentEntriesCache[doc.data().year] = doc.data().content; });
-
                 let html = '';
                 for (let i = 0; i < 5; i++) {
                     const year = currentYear - i;
                     const content = currentEntriesCache[year] || "";
                     const hasContent = !!content;
                     const isCurrentYear = (i === 0);
-
-                    // 這裡產生兩個區塊：View(預設顯示) 和 Edit(預設隱藏)
                     html += `
                         <div class="bg-card rounded-2xl p-5 shadow-soft border border-white relative transition-all group">
-                            
                             <div class="flex items-center justify-between mb-2">
-                                <div class="flex items-center gap-2">
-                                    <h3 class="font-serif font-bold text-xl text-ink">${year}</h3>
-                                    ${isCurrentYear ? '<span class="text-[9px] bg-gold text-white px-2 rounded-full">TODAY</span>' : ''}
-                                </div>
-                                <button onclick="toggleEditMode(${year})" class="text-gray-300 hover:text-gold transition-colors p-1" id="btn-edit-${year}">
-                                    <i class="fa-solid fa-pencil"></i>
-                                </button>
+                                <div class="flex items-center gap-2"><h3 class="font-serif font-bold text-xl text-ink">${year}</h3>${isCurrentYear ? '<span class="text-[9px] bg-gold text-white px-2 rounded-full">TODAY</span>' : ''}</div>
+                                <button onclick="toggleEditMode(${year})" class="text-gray-300 hover:text-gold transition-colors p-1" id="btn-edit-${year}"><i class="fa-solid fa-pencil"></i></button>
                             </div>
-
-                            <div id="view-${year}" class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap ${!hasContent ? 'opacity-40 italic' : ''}">
-                                ${hasContent ? content : 'No entry for this year.'}
-                            </div>
-
+                            <div id="view-${year}" class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap ${!hasContent ? 'opacity-40 italic' : ''}">${hasContent ? content : 'No entry for this year.'}</div>
                             <div id="edit-box-${year}" class="hidden mt-2">
                                 <textarea id="textarea-${year}" class="w-full bg-gray-50 rounded-lg p-3 text-sm text-ink outline-none focus:ring-1 focus:ring-gold mb-2 min-h-[100px]">${content}</textarea>
-                                <div class="flex justify-end gap-2">
-                                    <button onclick="toggleEditMode(${year})" class="text-xs text-gray-400 hover:text-gray-600 px-3 py-1">Cancel</button>
-                                    <button onclick="saveArchiveEdit(${year})" class="text-xs bg-gold text-white px-4 py-1.5 rounded-full font-bold shadow-sm">Save</button>
-                                </div>
+                                <div class="flex justify-end gap-2"><button onclick="toggleEditMode(${year})" class="text-xs text-gray-400 hover:text-gray-600 px-3 py-1">Cancel</button><button onclick="saveArchiveEdit(${year})" class="text-xs bg-gold text-white px-4 py-1.5 rounded-full font-bold shadow-sm">Save</button></div>
                             </div>
-
                         </div>`;
                 }
                 listContainer.innerHTML = html;
             } catch (e) { console.error(e); }
         }
+        window.toggleEditMode = (year) => { const viewEl = document.getElementById(`view-${year}`); const editEl = document.getElementById(`edit-box-${year}`); const btnEl = document.getElementById(`btn-edit-${year}`); if (editEl.classList.contains('hidden')) { viewEl.classList.add('hidden'); editEl.classList.remove('hidden'); btnEl.classList.add('invisible'); } else { viewEl.classList.remove('hidden'); editEl.classList.add('hidden'); btnEl.classList.remove('invisible'); } };
+        window.saveArchiveEdit = async (year) => { const content = document.getElementById(`textarea-${year}`).value; await saveEntryToDB(year, content); loadEntriesForDate(); };
+        document.getElementById('append-btn').addEventListener('click', async () => { const inputEl = document.getElementById('journal-input'); const newText = inputEl.value.trim(); if (!newText) return; const btn = document.getElementById('append-btn'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; const currentYear = currentDisplayDate.getFullYear(); const oldContent = currentEntriesCache[currentYear] || ""; const finalContent = oldContent ? `${oldContent}\n\n${newText}` : newText; await saveEntryToDB(currentYear, finalContent); inputEl.value = ""; btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-1"></i> 紀錄'; loadEntriesForDate(); });
+        async function saveEntryToDB(year, content) { const docId = `${currentUser.uid}_${year}_${getMDString(currentDisplayDate)}`; try { await setDoc(doc(db, "entries", docId), { userId: currentUser.uid, content: content, year: year, monthDay: getMDString(currentDisplayDate), timestamp: Timestamp.now(), dateString: new Date(year, currentDisplayDate.getMonth(), currentDisplayDate.getDate()).toDateString() }, { merge: true }); calculateStats(); } catch (e) { alert("Error: " + e.message); } }
+        async function calculateStats() { if (!currentUser) return; const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid)); const snapshot = await getDocs(q); let totalEntries = 0; const uniqueDates = new Set(); snapshot.forEach(doc => { const data = doc.data(); if (data.content && data.content.trim() !== "") { totalEntries++; if(data.dateString) uniqueDates.add(data.dateString); } }); document.getElementById('stat-count').innerText = totalEntries; document.getElementById('stat-streak').innerText = uniqueDates.size; renderBadges(totalEntries, uniqueDates.size); }
+        function renderBadges(count, days) { const container = document.getElementById('badge-wall'); if(!container) return; const badges = [{ name: "First Step", icon: "fa-pen-nib", unlocked: count >= 1 }, { name: "Week Streak", icon: "fa-fire", unlocked: days >= 7 }, { name: "Dedicated", icon: "fa-medal", unlocked: count >= 30 }]; let html = ''; badges.forEach(b => { const style = b.unlocked ? 'bg-gold/10 border-gold text-ink' : 'bg-gray-50 border-gray-100 text-gray-300 grayscale'; const anim = b.unlocked ? 'badge-unlock' : ''; html += `<div class="aspect-square rounded-2xl border ${style} ${anim} flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105"><i class="fa-solid ${b.icon} text-xl mb-1 ${b.unlocked ? 'text-gold' : ''}"></i><span class="text-[9px] font-bold leading-tight">${b.name}</span></div>`; }); container.innerHTML = html; }
 
-        // --- 3. Archive 互動邏輯 ---
-        window.toggleEditMode = (year) => {
-            const viewEl = document.getElementById(`view-${year}`);
-            const editEl = document.getElementById(`edit-box-${year}`);
-            const btnEl = document.getElementById(`btn-edit-${year}`);
-            
-            if (editEl.classList.contains('hidden')) {
-                // 進入編輯模式
-                viewEl.classList.add('hidden');
-                editEl.classList.remove('hidden');
-                btnEl.classList.add('invisible'); // 隱藏鉛筆
-            } else {
-                // 取消/退出
-                viewEl.classList.remove('hidden');
-                editEl.classList.add('hidden');
-                btnEl.classList.remove('invisible');
-            }
-        };
+        // ============================================
+        // ★★★ 核心功能：Profile 純文字圖片儲存 ★★★
+        // ============================================
 
-        window.saveArchiveEdit = async (year) => {
-            const content = document.getElementById(`textarea-${year}`).value;
-            await saveEntryToDB(year, content);
-            // 保存後刷新列表，回到 View Mode
-            loadEntriesForDate();
-        };
-
-        // --- 4. 上方 Logger 邏輯 (Append Mode) ---
-        document.getElementById('append-btn').addEventListener('click', async () => {
-            const inputEl = document.getElementById('journal-input');
-            const newText = inputEl.value.trim();
-            if (!newText) return;
-
-            const btn = document.getElementById('append-btn');
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            
-            const currentYear = currentDisplayDate.getFullYear();
-            // 抓取現有的內容 (如果有)
-            const oldContent = currentEntriesCache[currentYear] || "";
-            
-            // 邏輯：如果有舊內容，就加換行；沒有就直接存
-            const finalContent = oldContent ? `${oldContent}\n\n${newText}` : newText;
-            
-            await saveEntryToDB(currentYear, finalContent);
-            
-            // 清空輸入框
-            inputEl.value = "";
-            btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-1"></i> 紀錄';
-            
-            // 刷新列表 (你會看到下方 2025 卡片內容增加)
-            loadEntriesForDate();
-        });
-
-        // 共用保存 DB 函數
-        async function saveEntryToDB(year, content) {
-            const docId = `${currentUser.uid}_${year}_${getMDString(currentDisplayDate)}`;
-            try {
-                await setDoc(doc(db, "entries", docId), {
-                    userId: currentUser.uid,
-                    content: content,
-                    year: year,
-                    monthDay: getMDString(currentDisplayDate),
-                    timestamp: Timestamp.now(),
-                    dateString: new Date(year, currentDisplayDate.getMonth(), currentDisplayDate.getDate()).toDateString()
-                }, { merge: true });
-                calculateStats(); // 更新統計
-            } catch (e) { alert("Error: " + e.message); }
-        }
-
-        // --- 5. 統計與獎勵 (Stats & Gamification) ---
-        async function calculateStats() {
-            if (!currentUser) return;
-            const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid));
-            const snapshot = await getDocs(q);
-            let totalEntries = 0;
-            const uniqueDates = new Set();
-            
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                if (data.content && data.content.trim() !== "") {
-                    totalEntries++;
-                    if(data.dateString) uniqueDates.add(data.dateString);
-                }
-            });
-            
-            // 更新 UI
-            const countEl = document.getElementById('stat-count');
-            const streakEl = document.getElementById('stat-streak');
-            if(countEl) countEl.innerText = totalEntries;
-            if(streakEl) streakEl.innerText = uniqueDates.size;
-
-            renderBadges(totalEntries, uniqueDates.size);
-            renderHeatmap(uniqueDates.size);
-        }
-
-        function renderBadges(count, days) {
-            const container = document.getElementById('badge-wall');
-            if(!container) return; // 避免在 Journal 頁面報錯
-
-            const badges = [
-                { name: "First Step", icon: "fa-pen-nib", unlocked: count >= 1 },
-                { name: "Week Streak", icon: "fa-fire", unlocked: days >= 7 },
-                { name: "Dedicated", icon: "fa-medal", unlocked: count >= 30 }
-            ];
-            
-            let html = '';
-            badges.forEach(b => {
-                const style = b.unlocked ? 'bg-gold/10 border-gold text-ink' : 'bg-gray-50 border-gray-100 text-gray-300 grayscale';
-                const anim = b.unlocked ? 'badge-unlock' : '';
-                html += `
-                    <div class="aspect-square rounded-2xl border ${style} ${anim} flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105">
-                        <i class="fa-solid ${b.icon} text-xl mb-1 ${b.unlocked ? 'text-gold' : ''}"></i>
-                        <span class="text-[9px] font-bold leading-tight">${b.name}</span>
-                    </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function renderHeatmap(val) {
-             const c = document.getElementById('heatmap-container');
-             if(!c) return;
-             let h = '';
-             // 模擬 30 天數據 (實際應比對日期)
-             for(let i=0; i<30; i++) {
-                 // 這裡做個簡單的視覺效果：根據總寫作天數來隨機點亮
-                 const isActive = (i < (val % 30)) || (Math.random() > 0.8 && val > 5); 
-                 const height = isActive ? Math.random() * 60 + 20 : 10;
-                 const opacity = isActive ? 1 : 0.2;
-                 h += `<div class="flex-1 bg-gold rounded-t-sm mx-[1px]" style="height: ${height}%; opacity: ${opacity}"></div>`;
-             }
-             c.innerHTML = h;
-        }
-
-        // --- 6. Profile & Reset ---
-        // (保持原樣的 Reset 邏輯)
-        window.showResetModal = () => {
-            document.getElementById('reset-modal').classList.remove('hidden');
-            document.getElementById('reset-step-1').classList.remove('hidden');
-            document.getElementById('reset-step-2').classList.add('hidden');
-            document.getElementById('reset-password').value = "";
-        };
-        window.hideResetModal = () => { document.getElementById('reset-modal').classList.add('hidden'); };
-        window.toResetStep2 = () => { document.getElementById('reset-step-1').classList.add('hidden'); document.getElementById('reset-step-2').classList.remove('hidden'); };
-        
-        window.executeReset = async () => {
-            const pw = document.getElementById('reset-password').value;
-            const btn = document.getElementById('btn-confirm-reset');
-            if(!pw) return;
-            btn.innerText = "...";
-            try {
-                const credential = EmailAuthProvider.credential(currentUser.email, pw);
-                await reauthenticateWithCredential(currentUser, credential);
-                const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid));
-                const snapshot = await getDocs(q);
-                const batch = writeBatch(db);
-                snapshot.forEach(doc => { batch.delete(doc.ref); });
-                await batch.commit();
-                hideResetModal();
-                alert("Reset Complete.");
-                loadEntriesForDate();
-                calculateStats();
-            } catch (error) {
-                btn.innerText = "Error";
-                document.getElementById('reset-error').classList.remove('hidden');
-            }
-        };
-
-        // Profile Edit
         window.toggleEditProfile = () => {
             document.getElementById('profile-display').classList.toggle('hidden');
             document.getElementById('profile-edit').classList.toggle('hidden');
             if (!document.getElementById('profile-edit').classList.contains('hidden')) {
                 document.getElementById('edit-name').value = currentUser.displayName || "";
-                document.getElementById('edit-photo').value = currentUser.photoURL || "";
+                loadExtraProfileData(true); // 載入性別年齡
             }
         };
+
+        window.previewImage = (input) => {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) { document.getElementById('preview-avatar').src = e.target.result; }
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
+        // 強力壓縮：轉成極小的 Base64 String
+        const compressImageToBase64 = (file) => {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.src = URL.createObjectURL(file);
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    // 限制最大尺寸 200px (頭像夠用了)
+                    const MAX_SIZE = 200; 
+                    let width = img.width; let height = img.height;
+                    if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                    else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                    canvas.width = width; canvas.height = height;
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // 輸出為 base64 字串 (0.6 品質)
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+                img.onerror = (e) => reject(e);
+            });
+        };
+
         window.saveProfile = async () => {
             const name = document.getElementById('edit-name').value;
-            const photo = document.getElementById('edit-photo').value;
+            const gender = document.getElementById('edit-gender').value;
+            const age = document.getElementById('edit-age').value;
+            const fileInput = document.getElementById('avatar-upload');
+            const btn = document.getElementById('btn-save-profile');
+            
+            btn.innerText = "處理中..."; btn.disabled = true;
+
             try {
-                await updateProfile(currentUser, { displayName: name, photoURL: photo });
-                loadUserProfile(); toggleEditProfile();
-            } catch (e) { alert(e.message); }
+                // 1. 處理圖片 (如果有新圖片)
+                let base64Image = null;
+                if (fileInput.files.length > 0) {
+                    base64Image = await compressImageToBase64(fileInput.files[0]);
+                    // 如果字串太大，Firebase 會報錯 (通常 200px jpg 只有 5-10KB，非常安全)
+                }
+
+                // 2. 準備要存入 Firestore 的資料
+                const updateData = {
+                    gender: gender,
+                    age: age,
+                    email: currentUser.email,
+                    lastUpdated: Timestamp.now()
+                };
+                // 只有當有新圖片時，才更新 avatarBase64 欄位
+                if (base64Image) {
+                    updateData.avatarBase64 = base64Image;
+                }
+
+                // 3. 更新 Firestore (Users Collection)
+                await setDoc(doc(db, "users", currentUser.uid), updateData, { merge: true });
+
+                // 4. 更新 Auth Profile (DisplayName) - Auth PhotoURL 欄位太短存不下 Base64，我們只存名字
+                await updateProfile(currentUser, { displayName: name });
+
+                loadUserProfile(); 
+                toggleEditProfile();
+                btn.innerText = "儲存變更"; btn.disabled = false;
+
+            } catch (e) {
+                console.error(e);
+                alert("儲存失敗: " + e.message);
+                btn.innerText = "重試"; btn.disabled = false;
+            }
         };
+
+        // 讀取 Profile (優先讀取 Firestore 裡的 Base64 圖片)
+        async function loadExtraProfileData(fillForm = false) {
+            try {
+                const d = await getDoc(doc(db, "users", currentUser.uid));
+                if (d.exists()) {
+                    const data = d.data();
+                    
+                    // 顯示性別年齡
+                    if(fillForm) {
+                        document.getElementById('edit-gender').value = data.gender || "保密";
+                        document.getElementById('edit-age').value = data.age || "";
+                    } else {
+                        document.getElementById('display-gender').innerText = data.gender || "保密";
+                        document.getElementById('display-age').innerText = data.age || "--";
+                    }
+
+                    // ★★★ 關鍵：如果 Firestore 有圖片，就用那張 ★★★
+                    if (data.avatarBase64) {
+                        const avatarEl = document.getElementById('display-avatar');
+                        avatarEl.src = data.avatarBase64;
+                        if(fillForm) document.getElementById('preview-avatar').src = data.avatarBase64;
+                    }
+                }
+            } catch(e){}
+        }
+
         async function loadUserProfile() {
             if (!currentUser) return;
             document.getElementById('display-name').innerText = currentUser.displayName || "User";
-            document.getElementById('display-avatar').src = currentUser.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${currentUser.uid}`;
+            // 先放預設圖，loadExtraProfileData 會再覆蓋成自訂圖
+            document.getElementById('display-avatar').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${currentUser.uid}`;
+            loadExtraProfileData(false);
         }
+
+        // ... (Reset & Auth Logic) ...
+        window.showResetModal = () => { document.getElementById('reset-modal').classList.remove('hidden'); document.getElementById('reset-step-1').classList.remove('hidden'); document.getElementById('reset-step-2').classList.add('hidden'); document.getElementById('reset-password').value = ""; };
+        window.hideResetModal = () => { document.getElementById('reset-modal').classList.add('hidden'); };
+        window.toResetStep2 = () => { document.getElementById('reset-step-1').classList.add('hidden'); document.getElementById('reset-step-2').classList.remove('hidden'); };
+        window.executeReset = async () => { const pw = document.getElementById('reset-password').value; if(!pw) return; try { const credential = EmailAuthProvider.credential(currentUser.email, pw); await reauthenticateWithCredential(currentUser, credential); const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid)); const snapshot = await getDocs(q); const batch = writeBatch(db); snapshot.forEach(doc => { batch.delete(doc.ref); }); await batch.commit(); hideResetModal(); alert("Reset Complete."); loadEntriesForDate(); calculateStats(); } catch (error) { document.getElementById('reset-error').classList.remove('hidden'); } };
 
         window.switchTab = (tab) => {
             document.getElementById('view-journal').classList.toggle('hidden-view', tab !== 'journal');
@@ -488,39 +412,13 @@
             if (tab === 'profile') { calculateStats(); loadUserProfile(); }
         };
 
-        // Auth
         const authForm = document.getElementById('auth-form');
         let isLoginMode = true;
-        document.getElementById('toggle-auth-mode').addEventListener('click', (e) => {
-            e.preventDefault(); isLoginMode = !isLoginMode;
-            document.getElementById('auth-btn').innerText = isLoginMode ? "登入" : "註冊";
-            e.target.innerText = isLoginMode ? "還沒有帳號？註冊" : "已有帳號？登入";
-        });
-        authForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const pw = document.getElementById('password').value;
-            try {
-                if (isLoginMode) await signInWithEmailAndPassword(auth, email, pw);
-                else await createUserWithEmailAndPassword(auth, email, pw);
-            } catch (err) { document.getElementById('auth-error').innerText = err.message; document.getElementById('auth-error').classList.remove('hidden'); }
-        });
+        document.getElementById('toggle-auth-mode').addEventListener('click', (e) => { e.preventDefault(); isLoginMode = !isLoginMode; document.getElementById('auth-btn').innerText = isLoginMode ? "登入" : "註冊"; e.target.innerText = isLoginMode ? "還沒有帳號？註冊" : "已有帳號？登入"; });
+        authForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('email').value; const pw = document.getElementById('password').value; try { if (isLoginMode) await signInWithEmailAndPassword(auth, email, pw); else await createUserWithEmailAndPassword(auth, email, pw); } catch (err) { document.getElementById('auth-error').innerText = err.message; document.getElementById('auth-error').classList.remove('hidden'); } });
         window.handleLogout = () => signOut(auth);
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById('auth-view').classList.add('hidden-view');
-                document.getElementById('app-view').classList.remove('hidden-view');
-                setTimeout(() => document.getElementById('app-view').classList.remove('opacity-0'), 50);
-                updateDateUI();
-                loadUserProfile();
-            } else {
-                currentUser = null;
-                document.getElementById('auth-view').classList.remove('hidden-view');
-                document.getElementById('app-view').classList.add('hidden-view', 'opacity-0');
-            }
-        });
+        onAuthStateChanged(auth, (user) => { if (user) { currentUser = user; document.getElementById('auth-view').classList.add('hidden-view'); document.getElementById('app-view').classList.remove('hidden-view'); setTimeout(() => document.getElementById('app-view').classList.remove('opacity-0'), 50); updateDateUI(); loadUserProfile(); } else { currentUser = null; document.getElementById('auth-view').classList.remove('hidden-view'); document.getElementById('app-view').classList.add('hidden-view', 'opacity-0'); } });
 
     </script>
 </body>
