@@ -3,14 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="5-Year Journal">
-    <meta name="theme-color" content="#F5F0EB">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon.png"> 
-
     <title>The 5-Year Journal | 五年日記</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -23,7 +15,7 @@
                 extend: {
                     colors: { paper: '#F5F0EB', ink: '#4A4036', gold: '#D4AF37', card: '#FFFFFF', subtle: '#8C857E' },
                     fontFamily: { serif: ['Merriweather', 'serif'], sans: ['Inter', 'sans-serif'] },
-                    boxShadow: { 'soft': '0 4px 20px -2px rgba(74, 64, 54, 0.05)', 'glow': '0 0 15px rgba(212, 175, 55, 0.3)' }
+                    boxShadow: { 'soft': '0 4px 20px -2px rgba(74, 64, 54, 0.05)' }
                 }
             }
         }
@@ -32,9 +24,7 @@
         body { background-color: #F5F0EB; color: #4A4036; -webkit-font-smoothing: antialiased; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .hidden-view { display: none !important; }
-        /* 底部導航選中狀態 */
-        .nav-btn.active { color: #4A4036; }
-        .nav-btn.active i { transform: translateY(-2px); }
+        .nav-btn.active { color: #4A4036; } 
         .nav-btn { color: #A8A095; transition: all 0.3s ease; }
     </style>
 </head>
@@ -43,106 +33,92 @@
     <div class="w-full max-w-md bg-paper min-h-screen relative shadow-2xl flex flex-col overflow-hidden">
 
         <div id="auth-view" class="absolute inset-0 z-50 bg-paper flex flex-col justify-center items-center p-8 transition-opacity duration-500">
-            <div class="w-full max-w-sm">
-                <div class="text-center mb-10">
-                    <div class="inline-block p-4 rounded-full border-2 border-ink/10 mb-4">
-                        <i class="fa-solid fa-feather-pointed text-4xl text-ink"></i>
-                    </div>
-                    <h1 class="font-serif text-3xl font-bold text-ink">The Journal</h1>
-                    <p class="text-sm text-subtle mt-2 font-serif italic">寫下今日，遇見過去。</p>
+            <div class="w-full max-w-sm text-center">
+                <div class="inline-block p-4 rounded-full border-2 border-ink/10 mb-4">
+                    <i class="fa-solid fa-feather-pointed text-4xl text-ink"></i>
                 </div>
-
-                <div id="auth-error" class="hidden text-red-500 text-xs text-center mb-4 bg-red-50 p-2 rounded"></div>
-
-                <form id="auth-form" class="space-y-4">
-                    <input type="email" id="email" required placeholder="Email" class="w-full bg-white border border-transparent focus:border-gold rounded-xl px-4 py-3 text-ink outline-none shadow-soft">
-                    <input type="password" id="password" required placeholder="Password" class="w-full bg-white border border-transparent focus:border-gold rounded-xl px-4 py-3 text-ink outline-none shadow-soft">
-                    <button type="submit" id="auth-btn" class="w-full bg-ink text-white font-medium py-3 rounded-xl hover:bg-gold transition-colors shadow-lg">登入 (Login)</button>
+                <h1 class="font-serif text-3xl font-bold text-ink mb-8">The Journal</h1>
+                <div id="auth-error" class="hidden text-red-500 text-xs mb-4"></div>
+                
+                <form id="auth-form" class="space-y-4 text-left">
+                    <input type="email" id="email" required placeholder="Email" class="w-full bg-white rounded-xl px-4 py-3 outline-none shadow-soft">
+                    <input type="password" id="password" required placeholder="Password" class="w-full bg-white rounded-xl px-4 py-3 outline-none shadow-soft">
+                    <button type="submit" id="auth-btn" class="w-full bg-ink text-white font-medium py-3 rounded-xl hover:bg-gold transition-colors shadow-lg">登入</button>
                 </form>
-
-                <div class="mt-6 text-center">
-                    <button id="toggle-auth-mode" class="text-xs text-subtle underline hover:text-gold">還沒有帳號？點此註冊</button>
-                </div>
+                <button id="toggle-auth-mode" class="mt-6 text-xs text-subtle underline">還沒有帳號？註冊</button>
             </div>
         </div>
 
         <div id="app-view" class="hidden-view flex flex-col h-full opacity-0 transition-opacity duration-700">
             
             <main id="view-journal" class="flex-1 overflow-y-auto pb-24 no-scrollbar">
-                <header class="px-6 py-6 flex justify-between items-center sticky top-0 bg-paper/95 backdrop-blur-sm z-10">
-                    <div>
-                        <h1 class="font-serif text-3xl font-bold tracking-tight text-ink" id="header-date">--</h1>
-                        <p class="text-sm text-subtle font-sans mt-1" id="header-weekday">--</p>
-                    </div>
-                    <div class="flex gap-4">
-                         <button onclick="handleLogout()" class="w-10 h-10 rounded-full bg-white shadow-soft flex items-center justify-center text-ink hover:text-red-500 transition-colors">
-                            <i class="fa-solid fa-power-off"></i>
+                
+                <header class="px-4 py-6 flex justify-between items-center sticky top-0 bg-paper/95 backdrop-blur-sm z-10 border-b border-ink/5">
+                    
+                    <div class="flex items-center gap-2">
+                        <button onclick="changeDate(-1)" class="w-8 h-8 rounded-full bg-white shadow-soft text-ink hover:text-gold transition-colors">
+                            <i class="fa-solid fa-chevron-left text-xs"></i>
+                        </button>
+                        
+                        <div class="text-center px-2 min-w-[100px]">
+                            <h1 class="font-serif text-xl font-bold text-ink leading-none" id="header-date">--</h1>
+                            <p class="text-[10px] text-subtle font-sans mt-1 uppercase tracking-wider" id="header-weekday">--</p>
+                        </div>
+
+                        <button onclick="changeDate(1)" class="w-8 h-8 rounded-full bg-white shadow-soft text-ink hover:text-gold transition-colors">
+                            <i class="fa-solid fa-chevron-right text-xs"></i>
                         </button>
                     </div>
+
+                    <button onclick="handleLogout()" class="px-3 py-1 text-xs font-bold text-ink/50 hover:text-red-500 border border-ink/10 rounded-full transition-colors">
+                        登出
+                    </button>
                 </header>
 
-                <section class="px-6 mb-8">
-                    <div class="bg-card rounded-3xl p-6 shadow-soft relative overflow-hidden">
+                <section class="px-6 my-6">
+                    <div class="bg-card rounded-3xl p-6 shadow-soft relative overflow-hidden group">
                         <div class="absolute top-0 left-0 w-1 h-full bg-gold opacity-50"></div>
                         <div class="flex justify-between items-center mb-4">
-                            <span class="text-xs font-bold tracking-widest uppercase text-gold" id="current-year-display">2025</span>
-                            <span class="text-xs text-subtle">Writing</span>
+                            <span class="text-xs font-bold tracking-widest uppercase text-gold" id="input-year-label">2025</span>
+                            <span class="text-xs text-subtle"><i class="fa-solid fa-pen-nib mr-1"></i>Writing</span>
                         </div>
-                        <textarea id="journal-input" class="w-full h-32 bg-transparent border-none focus:ring-0 resize-none font-serif text-lg leading-relaxed text-ink placeholder-gray-300 p-0" placeholder="此刻，記錄下今天的微光..."></textarea>
+                        <textarea id="journal-input" class="w-full h-32 bg-transparent border-none focus:ring-0 resize-none font-serif text-lg leading-relaxed text-ink placeholder-gray-300 p-0" placeholder="記錄下這的一刻..."></textarea>
                         <div class="flex justify-end mt-4 pt-4 border-t border-gray-100">
-                            <button id="save-btn" class="bg-ink text-white px-6 py-2 rounded-full text-sm font-sans font-medium hover:bg-gold transition-colors shadow-lg">保存</button>
+                            <button id="save-btn" class="bg-ink text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gold transition-colors shadow-lg">
+                                保存
+                            </button>
                         </div>
                     </div>
                 </section>
 
                 <section class="px-6">
-                    <h2 class="font-serif text-lg font-bold mb-4 flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-gold inline-block"></span>
-                        On this day
-                    </h2>
-                    <div id="archive-list" class="flex flex-col gap-4 pb-10">
-                        <p class="text-center text-xs text-gray-400 py-4">載入歷史紀錄中...</p>
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="h-px bg-ink/10 flex-1"></div>
+                        <span class="text-xs font-serif text-subtle italic">The Past</span>
+                        <div class="h-px bg-ink/10 flex-1"></div>
                     </div>
+                    
+                    <div id="archive-list" class="flex flex-col gap-4 pb-10">
+                        </div>
                 </section>
             </main>
 
-            <main id="view-profile" class="hidden-view flex-1 overflow-y-auto pb-24 no-scrollbar">
-                <section class="px-6 pt-10 pb-6 text-center">
-                     <div class="relative inline-block mb-4">
-                        <div class="w-24 h-24 rounded-full bg-white border-4 border-white shadow-soft flex items-center justify-center text-4xl text-gray-300">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
+            <main id="view-profile" class="hidden-view flex-1 overflow-y-auto pb-24">
+                <section class="px-6 pt-10 text-center">
+                    <div class="w-20 h-20 mx-auto rounded-full bg-white shadow-soft flex items-center justify-center text-3xl text-gray-300 mb-4">
+                        <i class="fa-solid fa-user"></i>
                     </div>
-                    <h2 class="font-serif text-2xl font-bold text-ink" id="profile-email">User</h2>
+                    <h2 class="font-serif text-xl font-bold" id="profile-email">User</h2>
                 </section>
-
-                <section class="px-6 mb-8">
-                    <div class="bg-gradient-to-r from-ink to-[#5C5044] rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
-                        <div class="flex items-center gap-4 relative z-10">
-                            <div class="w-16 h-16 rounded-full bg-white/10 backdrop-blur flex items-center justify-center border border-white/20 shadow-glow">
-                                <i class="fa-solid fa-fire text-3xl text-gold"></i>
-                            </div>
-                            <div>
-                                <div class="text-xs uppercase tracking-widest opacity-80 mb-1">Current Streak</div>
-                                <div class="text-3xl font-serif font-bold">-- Days</div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                
-                <section class="px-6 text-center text-sm text-subtle">
-                    <p>更多統計功能開發中...</p>
-                </section>
+                <div class="p-6 text-center text-sm text-subtle">統計功能開發中...</div>
             </main>
 
             <nav class="bg-white/90 backdrop-blur-md border-t border-gray-100 h-20 px-8 flex justify-between items-center fixed bottom-0 w-full max-w-md pb-2 z-40">
                 <button id="nav-journal" class="nav-btn active flex flex-col items-center gap-1 w-16" onclick="switchTab('journal')">
-                    <i class="fa-solid fa-book-open text-xl"></i>
-                    <span class="text-[10px] font-medium">Journal</span>
+                    <i class="fa-solid fa-book-open text-xl"></i><span class="text-[10px]">Journal</span>
                 </button>
                 <button id="nav-profile" class="nav-btn flex flex-col items-center gap-1 w-16" onclick="switchTab('profile')">
-                    <i class="fa-solid fa-chart-simple text-xl"></i>
-                    <span class="text-[10px] font-medium">Stats</span>
+                    <i class="fa-solid fa-chart-simple text-xl"></i><span class="text-[10px]">Stats</span>
                 </button>
             </nav>
         </div>
@@ -154,11 +130,9 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // ============================================================
-        // ★★★ 請在此填入你的 Firebase Config ★★★
-        // ============================================================
+        // ★★★ 請在此填入 API KEY ★★★
         const firebaseConfig = {
-            apiKey: "AIzaSyCZw3UVcni89AWMOILc0FB9pcdQ5qQ4Fnk",
+          apiKey: "AIzaSyCZw3UVcni89AWMOILc0FB9pcdQ5qQ4Fnk",
   authDomain: "journal-cfb68.firebaseapp.com",
   projectId: "journal-cfb68",
   storageBucket: "journal-cfb68.firebasestorage.app",
@@ -166,74 +140,175 @@
   appId: "1:761510066058:web:4e37165e157ce7b335fa73",
   measurementId: "G-VS6NNGZXVM"
         };
-        // ============================================================
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
         let currentUser = null;
-        let isLoginMode = true;
 
-        // --- 1. 時間處理 ---
-        const now = new Date();
+        // --- 日期控制邏輯 (核心修改) ---
+        let currentDisplayDate = new Date(); // 當前顯示的日期 (預設今天)
+
         const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-        document.getElementById('header-date').innerText = `${months[now.getMonth()]} ${now.getDate()}`;
-        document.getElementById('header-weekday').innerText = days[now.getDay()];
-        
-        const getMonthDayString = (date) => `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
 
-        // --- 2. 視圖切換 (Tab Switching) ---
-        window.switchTab = (tabName) => {
-            const vJournal = document.getElementById('view-journal');
-            const vProfile = document.getElementById('view-profile');
-            const nJournal = document.getElementById('nav-journal');
-            const nProfile = document.getElementById('nav-profile');
+        // 更新介面日期文字
+        function updateDateUI() {
+            const m = months[currentDisplayDate.getMonth()];
+            const d = currentDisplayDate.getDate();
+            const w = days[currentDisplayDate.getDay()];
+            const y = currentDisplayDate.getFullYear();
 
-            if (tabName === 'journal') {
-                vJournal.classList.remove('hidden-view');
-                vProfile.classList.add('hidden-view');
-                nJournal.classList.add('active');
-                nProfile.classList.remove('active');
-            } else {
-                vJournal.classList.add('hidden-view');
-                vProfile.classList.remove('hidden-view');
-                nProfile.classList.add('active');
-                nJournal.classList.remove('active');
-                // 更新 Profile 資訊
-                if(currentUser) document.getElementById('profile-email').innerText = currentUser.email.split('@')[0];
-            }
+            document.getElementById('header-date').innerText = `${m} ${d}`;
+            document.getElementById('header-weekday').innerText = w;
+            document.getElementById('input-year-label').innerText = `${y} (Current)`;
+            
+            // 每次換日期，都要重抓那一天的日記
+            loadEntriesForDate(); 
+        }
+
+        // 左右切換日期 (Export 給 HTML 用)
+        window.changeDate = (offset) => {
+            currentDisplayDate.setDate(currentDisplayDate.getDate() + offset);
+            updateDateUI();
         };
 
-        // --- 3. 身份驗證邏輯 ---
+        // 格式化 Month-Day (用來查詢資料庫)
+        const getMDString = (date) => `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+
+        // --- 載入日記邏輯 (包含過去年份的空缺填補) ---
+        async function loadEntriesForDate() {
+            if (!currentUser) return;
+            
+            const listContainer = document.getElementById('archive-list');
+            const inputArea = document.getElementById('journal-input');
+            const targetMD = getMDString(currentDisplayDate);
+            const currentYear = currentDisplayDate.getFullYear();
+
+            // 1. 清空並顯示載入中
+            listContainer.innerHTML = '<div class="text-center py-4 text-xs text-gray-300">Loading...</div>';
+            inputArea.value = ""; // 清空輸入框預設值
+
+            try {
+                // 2. 從資料庫抓取「這個用戶」在「這一天 (不分年份)」的所有日記
+                const q = query(
+                    collection(db, "entries"),
+                    where("userId", "==", currentUser.uid),
+                    where("monthDay", "==", targetMD)
+                );
+                const snapshot = await getDocs(q);
+                
+                // 將資料轉換為 Map，方便按年份查找 (Key: Year, Value: Content)
+                const entriesMap = {};
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    entriesMap[data.year] = data.content;
+                });
+
+                // 3. 填入上方輸入框 (如果今年有寫過，就顯示出來讓用戶修改)
+                if (entriesMap[currentYear]) {
+                    inputArea.value = entriesMap[currentYear];
+                }
+
+                // 4. 生成下方「過去 5 年」的列表
+                let html = '';
+                // 從去年開始，往回推 5 年
+                for (let i = 1; i <= 5; i++) {
+                    const pastYear = currentYear - i;
+                    const content = entriesMap[pastYear]; // 看看那一年有沒有日記
+                    const hasContent = content ? true : false;
+                    
+                    // 根據是否有內容，顯示不同樣式
+                    if (hasContent) {
+                        html += `
+                            <div class="bg-card rounded-2xl p-5 shadow-soft border border-white relative">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <h3 class="font-serif font-bold text-xl text-ink">${pastYear}</h3>
+                                    <span class="text-[10px] text-white bg-gold px-2 py-0.5 rounded-full">${months[currentDisplayDate.getMonth()]} ${currentDisplayDate.getDate()}</span>
+                                </div>
+                                <div class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap">${content}</div>
+                            </div>
+                        `;
+                    } else {
+                        // 空狀態 (Empty State) - 顯示年份但灰色
+                        html += `
+                            <div class="rounded-2xl p-4 border-2 border-dashed border-gray-200 flex justify-between items-center opacity-60">
+                                <h3 class="font-serif font-bold text-lg text-gray-400">${pastYear}</h3>
+                                <span class="text-[10px] text-gray-300">No entry</span>
+                            </div>
+                        `;
+                    }
+                }
+                listContainer.innerHTML = html;
+
+            } catch (e) {
+                console.error(e);
+                listContainer.innerHTML = '<div class="text-center text-red-300 text-xs">讀取失敗，請檢查網路</div>';
+            }
+        }
+
+        // --- 保存邏輯 ---
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const content = document.getElementById('journal-input').value;
+            if (!content.trim()) return;
+            
+            const btn = document.getElementById('save-btn');
+            btn.innerText = "Saving...";
+
+            try {
+                // 這裡簡化邏輯：每次保存都視為新增一筆 Doc (實務上可能要檢查是否要 Update)
+                // 但為了簡單起見，我們先用 addDoc，顯示時只抓最新的一筆即可(或是未來進階做 update)
+                await addDoc(collection(db, "entries"), {
+                    userId: currentUser.uid,
+                    content: content,
+                    year: currentDisplayDate.getFullYear(), // 使用當前選中的年份
+                    monthDay: getMDString(currentDisplayDate),
+                    timestamp: Timestamp.now()
+                });
+                
+                btn.innerText = "Saved!";
+                // 重新載入列表以更新畫面
+                loadEntriesForDate();
+                setTimeout(() => btn.innerText = "保存", 1500);
+            } catch (e) {
+                console.error(e);
+                btn.innerText = "Error";
+            }
+        });
+
+        // --- 登入/狀態管理 (維持不變) ---
         const authForm = document.getElementById('auth-form');
-        const authError = document.getElementById('auth-error');
-        
+        let isLoginMode = true;
+
         document.getElementById('toggle-auth-mode').addEventListener('click', (e) => {
             e.preventDefault();
             isLoginMode = !isLoginMode;
-            document.getElementById('auth-btn').innerText = isLoginMode ? "登入 (Login)" : "註冊並開始 (Sign Up)";
-            e.target.innerText = isLoginMode ? "還沒有帳號？點此註冊" : "已有帳號？點此登入";
-            authError.classList.add('hidden');
+            document.getElementById('auth-btn').innerText = isLoginMode ? "登入" : "註冊";
+            e.target.innerText = isLoginMode ? "還沒有帳號？註冊" : "已有帳號？登入";
         });
 
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            authError.classList.add('hidden');
-            
+            const pw = document.getElementById('password').value;
             try {
-                if (isLoginMode) await signInWithEmailAndPassword(auth, email, password);
-                else await createUserWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                authError.innerText = error.message;
-                authError.classList.remove('hidden');
+                if (isLoginMode) await signInWithEmailAndPassword(auth, email, pw);
+                else await createUserWithEmailAndPassword(auth, email, pw);
+            } catch (err) {
+                document.getElementById('auth-error').innerText = err.message;
+                document.getElementById('auth-error').classList.remove('hidden');
             }
         });
 
         window.handleLogout = () => signOut(auth);
+        
+        // 頁面切換
+        window.switchTab = (tab) => {
+            document.getElementById('view-journal').classList.toggle('hidden-view', tab !== 'journal');
+            document.getElementById('view-profile').classList.toggle('hidden-view', tab !== 'profile');
+            document.getElementById('nav-journal').classList.toggle('active', tab === 'journal');
+            document.getElementById('nav-profile').classList.toggle('active', tab === 'profile');
+        };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -242,7 +317,8 @@
                 const appView = document.getElementById('app-view');
                 appView.classList.remove('hidden-view');
                 setTimeout(() => appView.classList.remove('opacity-0'), 50);
-                loadPastEntries();
+                
+                updateDateUI(); // 初始化載入今天
             } else {
                 currentUser = null;
                 document.getElementById('auth-view').classList.remove('hidden-view');
@@ -250,59 +326,6 @@
             }
         });
 
-        // --- 4. 資料庫邏輯 (日記) ---
-        document.getElementById('save-btn').addEventListener('click', async () => {
-            const content = document.getElementById('journal-input').value;
-            if (!content.trim()) return;
-            const btn = document.getElementById('save-btn');
-            btn.innerText = "Saving...";
-
-            try {
-                await addDoc(collection(db, "entries"), {
-                    userId: currentUser.uid,
-                    content: content,
-                    year: now.getFullYear(),
-                    monthDay: getMonthDayString(now),
-                    timestamp: Timestamp.now()
-                });
-                document.getElementById('journal-input').value = "";
-                btn.innerText = "Saved!";
-                setTimeout(() => btn.innerText = "保存", 2000);
-            } catch (e) {
-                console.error(e);
-                btn.innerText = "Error";
-            }
-        });
-
-        async function loadPastEntries() {
-            if (!currentUser) return;
-            const listContainer = document.getElementById('archive-list');
-            
-            try {
-                const q = query(
-                    collection(db, "entries"),
-                    where("userId", "==", currentUser.uid),
-                    where("monthDay", "==", getMonthDayString(now)),
-                    orderBy("year", "desc")
-                );
-                const querySnapshot = await getDocs(q);
-                let html = '';
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.year === now.getFullYear()) return; // 隱藏今年的
-                    html += `
-                        <div class="bg-card rounded-2xl p-5 shadow-soft border border-white">
-                            <h3 class="font-serif font-bold text-xl text-ink mb-2">${data.year}</h3>
-                            <div class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap">${data.content}</div>
-                        </div>`;
-                });
-                listContainer.innerHTML = html || `<div class="text-center py-8 text-gray-300 font-serif italic">尚無過去幾年的紀錄。</div>`;
-            } catch (error) {
-                console.log(error); // 可能是索引未建立
-                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs">載入中或需建立索引...</div>`;
-            }
-        }
     </script>
 </body>
 </html>
