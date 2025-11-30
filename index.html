@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="5-Year Journal">
+    <meta name="theme-color" content="#F5F0EB">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png"> 
+
+    <title>The 5-Year Journal | 五年日記</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { paper: '#F5F0EB', ink: '#4A4036', gold: '#D4AF37', card: '#FFFFFF', subtle: '#8C857E' },
+                    fontFamily: { serif: ['Merriweather', 'serif'], sans: ['Inter', 'sans-serif'] },
+                    boxShadow: { 'soft': '0 4px 20px -2px rgba(74, 64, 54, 0.05)', 'glow': '0 0 15px rgba(212, 175, 55, 0.3)' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F5F0EB; color: #4A4036; -webkit-font-smoothing: antialiased; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .hidden-view { display: none !important; }
+        /* 底部導航選中狀態 */
+        .nav-btn.active { color: #4A4036; }
+        .nav-btn.active i { transform: translateY(-2px); }
+        .nav-btn { color: #A8A095; transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="flex justify-center min-h-screen">
+
+    <div class="w-full max-w-md bg-paper min-h-screen relative shadow-2xl flex flex-col overflow-hidden">
+
+        <div id="auth-view" class="absolute inset-0 z-50 bg-paper flex flex-col justify-center items-center p-8 transition-opacity duration-500">
+            <div class="w-full max-w-sm">
+                <div class="text-center mb-10">
+                    <div class="inline-block p-4 rounded-full border-2 border-ink/10 mb-4">
+                        <i class="fa-solid fa-feather-pointed text-4xl text-ink"></i>
+                    </div>
+                    <h1 class="font-serif text-3xl font-bold text-ink">The Journal</h1>
+                    <p class="text-sm text-subtle mt-2 font-serif italic">寫下今日，遇見過去。</p>
+                </div>
+
+                <div id="auth-error" class="hidden text-red-500 text-xs text-center mb-4 bg-red-50 p-2 rounded"></div>
+
+                <form id="auth-form" class="space-y-4">
+                    <input type="email" id="email" required placeholder="Email" class="w-full bg-white border border-transparent focus:border-gold rounded-xl px-4 py-3 text-ink outline-none shadow-soft">
+                    <input type="password" id="password" required placeholder="Password" class="w-full bg-white border border-transparent focus:border-gold rounded-xl px-4 py-3 text-ink outline-none shadow-soft">
+                    <button type="submit" id="auth-btn" class="w-full bg-ink text-white font-medium py-3 rounded-xl hover:bg-gold transition-colors shadow-lg">登入 (Login)</button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <button id="toggle-auth-mode" class="text-xs text-subtle underline hover:text-gold">還沒有帳號？點此註冊</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="app-view" class="hidden-view flex flex-col h-full opacity-0 transition-opacity duration-700">
+            
+            <main id="view-journal" class="flex-1 overflow-y-auto pb-24 no-scrollbar">
+                <header class="px-6 py-6 flex justify-between items-center sticky top-0 bg-paper/95 backdrop-blur-sm z-10">
+                    <div>
+                        <h1 class="font-serif text-3xl font-bold tracking-tight text-ink" id="header-date">--</h1>
+                        <p class="text-sm text-subtle font-sans mt-1" id="header-weekday">--</p>
+                    </div>
+                    <div class="flex gap-4">
+                         <button onclick="handleLogout()" class="w-10 h-10 rounded-full bg-white shadow-soft flex items-center justify-center text-ink hover:text-red-500 transition-colors">
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <section class="px-6 mb-8">
+                    <div class="bg-card rounded-3xl p-6 shadow-soft relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-gold opacity-50"></div>
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-xs font-bold tracking-widest uppercase text-gold" id="current-year-display">2025</span>
+                            <span class="text-xs text-subtle">Writing</span>
+                        </div>
+                        <textarea id="journal-input" class="w-full h-32 bg-transparent border-none focus:ring-0 resize-none font-serif text-lg leading-relaxed text-ink placeholder-gray-300 p-0" placeholder="此刻，記錄下今天的微光..."></textarea>
+                        <div class="flex justify-end mt-4 pt-4 border-t border-gray-100">
+                            <button id="save-btn" class="bg-ink text-white px-6 py-2 rounded-full text-sm font-sans font-medium hover:bg-gold transition-colors shadow-lg">保存</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="px-6">
+                    <h2 class="font-serif text-lg font-bold mb-4 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-gold inline-block"></span>
+                        On this day
+                    </h2>
+                    <div id="archive-list" class="flex flex-col gap-4 pb-10">
+                        <p class="text-center text-xs text-gray-400 py-4">載入歷史紀錄中...</p>
+                    </div>
+                </section>
+            </main>
+
+            <main id="view-profile" class="hidden-view flex-1 overflow-y-auto pb-24 no-scrollbar">
+                <section class="px-6 pt-10 pb-6 text-center">
+                     <div class="relative inline-block mb-4">
+                        <div class="w-24 h-24 rounded-full bg-white border-4 border-white shadow-soft flex items-center justify-center text-4xl text-gray-300">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                    </div>
+                    <h2 class="font-serif text-2xl font-bold text-ink" id="profile-email">User</h2>
+                </section>
+
+                <section class="px-6 mb-8">
+                    <div class="bg-gradient-to-r from-ink to-[#5C5044] rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
+                        <div class="flex items-center gap-4 relative z-10">
+                            <div class="w-16 h-16 rounded-full bg-white/10 backdrop-blur flex items-center justify-center border border-white/20 shadow-glow">
+                                <i class="fa-solid fa-fire text-3xl text-gold"></i>
+                            </div>
+                            <div>
+                                <div class="text-xs uppercase tracking-widest opacity-80 mb-1">Current Streak</div>
+                                <div class="text-3xl font-serif font-bold">-- Days</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="px-6 text-center text-sm text-subtle">
+                    <p>更多統計功能開發中...</p>
+                </section>
+            </main>
+
+            <nav class="bg-white/90 backdrop-blur-md border-t border-gray-100 h-20 px-8 flex justify-between items-center fixed bottom-0 w-full max-w-md pb-2 z-40">
+                <button id="nav-journal" class="nav-btn active flex flex-col items-center gap-1 w-16" onclick="switchTab('journal')">
+                    <i class="fa-solid fa-book-open text-xl"></i>
+                    <span class="text-[10px] font-medium">Journal</span>
+                </button>
+                <button id="nav-profile" class="nav-btn flex flex-col items-center gap-1 w-16" onclick="switchTab('profile')">
+                    <i class="fa-solid fa-chart-simple text-xl"></i>
+                    <span class="text-[10px] font-medium">Stats</span>
+                </button>
+            </nav>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ============================================================
+        // ★★★ 請在此填入你的 Firebase Config ★★★
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZw3UVcni89AWMOILc0FB9pcdQ5qQ4Fnk",
+  authDomain: "journal-cfb68.firebaseapp.com",
+  projectId: "journal-cfb68",
+  storageBucket: "journal-cfb68.firebasestorage.app",
+  messagingSenderId: "761510066058",
+  appId: "1:761510066058:web:4e37165e157ce7b335fa73",
+  measurementId: "G-VS6NNGZXVM"
+        };
+        // ============================================================
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let isLoginMode = true;
+
+        // --- 1. 時間處理 ---
+        const now = new Date();
+        const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        document.getElementById('header-date').innerText = `${months[now.getMonth()]} ${now.getDate()}`;
+        document.getElementById('header-weekday').innerText = days[now.getDay()];
+        
+        const getMonthDayString = (date) => `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+
+        // --- 2. 視圖切換 (Tab Switching) ---
+        window.switchTab = (tabName) => {
+            const vJournal = document.getElementById('view-journal');
+            const vProfile = document.getElementById('view-profile');
+            const nJournal = document.getElementById('nav-journal');
+            const nProfile = document.getElementById('nav-profile');
+
+            if (tabName === 'journal') {
+                vJournal.classList.remove('hidden-view');
+                vProfile.classList.add('hidden-view');
+                nJournal.classList.add('active');
+                nProfile.classList.remove('active');
+            } else {
+                vJournal.classList.add('hidden-view');
+                vProfile.classList.remove('hidden-view');
+                nProfile.classList.add('active');
+                nJournal.classList.remove('active');
+                // 更新 Profile 資訊
+                if(currentUser) document.getElementById('profile-email').innerText = currentUser.email.split('@')[0];
+            }
+        };
+
+        // --- 3. 身份驗證邏輯 ---
+        const authForm = document.getElementById('auth-form');
+        const authError = document.getElementById('auth-error');
+        
+        document.getElementById('toggle-auth-mode').addEventListener('click', (e) => {
+            e.preventDefault();
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-btn').innerText = isLoginMode ? "登入 (Login)" : "註冊並開始 (Sign Up)";
+            e.target.innerText = isLoginMode ? "還沒有帳號？點此註冊" : "已有帳號？點此登入";
+            authError.classList.add('hidden');
+        });
+
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            authError.classList.add('hidden');
+            
+            try {
+                if (isLoginMode) await signInWithEmailAndPassword(auth, email, password);
+                else await createUserWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                authError.innerText = error.message;
+                authError.classList.remove('hidden');
+            }
+        });
+
+        window.handleLogout = () => signOut(auth);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('auth-view').classList.add('hidden-view');
+                const appView = document.getElementById('app-view');
+                appView.classList.remove('hidden-view');
+                setTimeout(() => appView.classList.remove('opacity-0'), 50);
+                loadPastEntries();
+            } else {
+                currentUser = null;
+                document.getElementById('auth-view').classList.remove('hidden-view');
+                document.getElementById('app-view').classList.add('hidden-view', 'opacity-0');
+            }
+        });
+
+        // --- 4. 資料庫邏輯 (日記) ---
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const content = document.getElementById('journal-input').value;
+            if (!content.trim()) return;
+            const btn = document.getElementById('save-btn');
+            btn.innerText = "Saving...";
+
+            try {
+                await addDoc(collection(db, "entries"), {
+                    userId: currentUser.uid,
+                    content: content,
+                    year: now.getFullYear(),
+                    monthDay: getMonthDayString(now),
+                    timestamp: Timestamp.now()
+                });
+                document.getElementById('journal-input').value = "";
+                btn.innerText = "Saved!";
+                setTimeout(() => btn.innerText = "保存", 2000);
+            } catch (e) {
+                console.error(e);
+                btn.innerText = "Error";
+            }
+        });
+
+        async function loadPastEntries() {
+            if (!currentUser) return;
+            const listContainer = document.getElementById('archive-list');
+            
+            try {
+                const q = query(
+                    collection(db, "entries"),
+                    where("userId", "==", currentUser.uid),
+                    where("monthDay", "==", getMonthDayString(now)),
+                    orderBy("year", "desc")
+                );
+                const querySnapshot = await getDocs(q);
+                let html = '';
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.year === now.getFullYear()) return; // 隱藏今年的
+                    html += `
+                        <div class="bg-card rounded-2xl p-5 shadow-soft border border-white">
+                            <h3 class="font-serif font-bold text-xl text-ink mb-2">${data.year}</h3>
+                            <div class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap">${data.content}</div>
+                        </div>`;
+                });
+                listContainer.innerHTML = html || `<div class="text-center py-8 text-gray-300 font-serif italic">尚無過去幾年的紀錄。</div>`;
+            } catch (error) {
+                console.log(error); // 可能是索引未建立
+                listContainer.innerHTML = `<div class="text-center text-gray-400 text-xs">載入中或需建立索引...</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
