@@ -82,7 +82,7 @@
                 <section class="px-6 my-6">
                     <h2 class="font-serif text-xl font-bold text-ink mb-3 pl-1">Today's Diary</h2>
                     <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-ink/5 focus-within:ring-2 focus-within:ring-gold/20 transition-all">
-                        <textarea id="journal-input" class="w-full h-24 bg-transparent border-none focus:ring-0 resize-none font-serif text-lg leading-relaxed text-ink placeholder-ink/20 p-0" placeholder="..."></textarea>
+                        <textarea id="journal-input" class="w-full h-24 bg-transparent border-none focus:ring-0 resize-none font-serif text-lg leading-relaxed text-ink p-0"></textarea>
                         <div class="flex justify-end mt-2">
                             <button id="append-btn" class="bg-ink text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-gold transition-colors shadow-lg shadow-ink/10">
                                 <i class="fa-solid fa-paper-plane mr-2"></i>記錄
@@ -203,29 +203,21 @@
 
         let currentEntriesCache = {};
 
-        // 修正：將 ${hasContent...} 緊貼標籤，避免 whitespace-pre-wrap 產生多餘空白
+        // 修正：徹底移除標籤間的空格，解決縮排顯示問題
         const generateEntryCard = (year, content, isCurrentYear) => {
             const hasContent = !!content;
             return `
-                <div class="bg-card rounded-2xl p-5 shadow-soft border border-white relative transition-all group">
-                    <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-serif font-bold text-xl text-ink">${year}</h3>
-                            ${isCurrentYear ? '<span class="text-[9px] bg-gold text-white px-2 rounded-full">TODAY</span>' : ''}
-                        </div>
-                        <button onclick="toggleEditMode(${year})" class="text-gray-300 hover:text-gold transition-colors p-1" id="btn-edit-${year}">
-                            <i class="fa-solid fa-pencil"></i>
-                        </button>
-                    </div>
-                    <div id="view-${year}" class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap ${!hasContent ? 'opacity-40 italic' : ''}">${hasContent ? content : 'No entry for this year.'}</div>
-                    <div id="edit-box-${year}" class="hidden mt-2">
-                        <textarea id="textarea-${year}" class="w-full bg-gray-50 rounded-lg p-3 text-sm text-ink outline-none focus:ring-1 focus:ring-gold mb-2 min-h-[100px]">${content}</textarea>
-                        <div class="flex justify-end gap-2">
-                            <button onclick="toggleEditMode(${year})" class="text-xs text-gray-400 hover:text-gray-600 px-3 py-1">Cancel</button>
-                            <button onclick="saveArchiveEdit(${year})" class="text-xs bg-gold text-white px-4 py-1.5 rounded-full font-bold shadow-sm">Save</button>
-                        </div>
-                    </div>
-                </div>`;
+<div class="bg-card rounded-2xl p-5 shadow-soft border border-white relative transition-all group">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2"><h3 class="font-serif font-bold text-xl text-ink">${year}</h3>${isCurrentYear ? '<span class="text-[9px] bg-gold text-white px-2 rounded-full">TODAY</span>' : ''}</div>
+<button onclick="toggleEditMode(${year})" class="text-gray-300 hover:text-gold transition-colors p-1" id="btn-edit-${year}"><i class="fa-solid fa-pencil"></i></button>
+</div>
+<div id="view-${year}" class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap ${!hasContent ? 'opacity-40 italic' : ''}">${hasContent ? content : 'No entry for this year.'}</div>
+<div id="edit-box-${year}" class="hidden mt-2">
+<textarea id="textarea-${year}" class="w-full bg-gray-50 rounded-lg p-3 text-sm text-ink outline-none focus:ring-1 focus:ring-gold mb-2 min-h-[100px]">${content}</textarea>
+<div class="flex justify-end gap-2"><button onclick="toggleEditMode(${year})" class="text-xs text-gray-400 hover:text-gray-600 px-3 py-1">Cancel</button><button onclick="saveArchiveEdit(${year})" class="text-xs bg-gold text-white px-4 py-1.5 rounded-full font-bold shadow-sm">Save</button></div>
+</div>
+</div>`;
         };
 
         async function loadEntriesForDate() {
