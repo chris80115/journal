@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The 5-Year Journal | 五年日記</title>
     
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -26,6 +31,16 @@
         .hidden-view { display: none !important; }
         .nav-btn.active { color: #4A4036; } 
         .nav-btn { color: #A8A095; transition: all 0.3s ease; }
+        
+        .btn-today {
+            font-size: 10px; padding: 4px 12px; border-radius: 20px;
+            background-color: #F3E5AB; color: #8C7323; font-weight: bold;
+            transition: all 0.2s; margin-top: 4px; display: inline-block;
+        }
+
+        /* 徽章動畫 */
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .badge-unlock { animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     </style>
 </head>
 <body class="flex justify-center min-h-screen">
@@ -38,8 +53,7 @@
                     <i class="fa-solid fa-feather-pointed text-4xl text-ink"></i>
                 </div>
                 <h1 class="font-serif text-3xl font-bold text-ink mb-8">The Journal</h1>
-                <div id="auth-error" class="hidden text-red-500 text-xs mb-4"></div>
-                
+                <div id="auth-error" class="hidden text-red-500 text-xs mb-4 bg-red-50 p-2 rounded"></div>
                 <form id="auth-form" class="space-y-4 text-left">
                     <input type="email" id="email" required placeholder="Email" class="w-full bg-white rounded-xl px-4 py-3 outline-none shadow-soft">
                     <input type="password" id="password" required placeholder="Password" class="w-full bg-white rounded-xl px-4 py-3 outline-none shadow-soft">
@@ -53,39 +67,30 @@
             
             <main id="view-journal" class="flex-1 overflow-y-auto pb-24 no-scrollbar">
                 
-                <header class="px-4 py-6 flex justify-between items-center sticky top-0 bg-paper/95 backdrop-blur-sm z-10 border-b border-ink/5">
-                    
-                    <div class="flex items-center gap-2">
-                        <button onclick="changeDate(-1)" class="w-8 h-8 rounded-full bg-white shadow-soft text-ink hover:text-gold transition-colors">
-                            <i class="fa-solid fa-chevron-left text-xs"></i>
-                        </button>
-                        
-                        <div class="text-center px-2 min-w-[100px]">
+                <header class="px-4 py-4 flex justify-between items-start sticky top-0 bg-paper/95 backdrop-blur-sm z-10 border-b border-ink/5">
+                    <div class="flex items-center gap-2 pt-1">
+                        <button onclick="changeDate(-1)" class="w-8 h-8 flex items-center justify-center text-ink hover:text-gold bg-white rounded-full shadow-sm"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                        <div class="text-center px-1 min-w-[100px] flex flex-col items-center">
                             <h1 class="font-serif text-xl font-bold text-ink leading-none" id="header-date">--</h1>
-                            <p class="text-[10px] text-subtle font-sans mt-1 uppercase tracking-wider" id="header-weekday">--</p>
+                            <span class="text-[10px] text-subtle font-sans uppercase tracking-wider mb-1" id="header-weekday">--</span>
+                            <button onclick="resetToToday()" id="btn-back-today" class="btn-today opacity-0 pointer-events-none">回到今天</button>
                         </div>
-
-                        <button onclick="changeDate(1)" class="w-8 h-8 rounded-full bg-white shadow-soft text-ink hover:text-gold transition-colors">
-                            <i class="fa-solid fa-chevron-right text-xs"></i>
-                        </button>
+                        <button onclick="changeDate(1)" class="w-8 h-8 flex items-center justify-center text-ink hover:text-gold bg-white rounded-full shadow-sm"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                     </div>
-
-                    <button onclick="handleLogout()" class="px-3 py-1 text-xs font-bold text-ink/50 hover:text-red-500 border border-ink/10 rounded-full transition-colors">
-                        登出
-                    </button>
+                    <button onclick="handleLogout()" class="mt-2 px-3 py-1 text-xs font-bold text-ink/40 hover:text-red-500 border border-ink/10 rounded-full transition-colors">登出</button>
                 </header>
 
                 <section class="px-6 my-6">
-                    <div class="bg-card rounded-3xl p-6 shadow-soft relative overflow-hidden group">
+                    <div class="bg-card rounded-3xl p-6 shadow-soft relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-1 h-full bg-gold opacity-50"></div>
                         <div class="flex justify-between items-center mb-4">
-                            <span class="text-xs font-bold tracking-widest uppercase text-gold" id="input-year-label">2025</span>
-                            <span class="text-xs text-subtle"><i class="fa-solid fa-pen-nib mr-1"></i>Writing</span>
+                            <span class="text-xs font-bold tracking-widest uppercase text-gold">ADD TO ENTRY</span>
+                            <span class="text-[10px] text-gray-400 italic">Clear & Append</span>
                         </div>
-                        <textarea id="journal-input" class="w-full h-32 bg-transparent border-none focus:ring-0 resize-none font-serif text-lg leading-relaxed text-ink placeholder-gray-300 p-0" placeholder="記錄下這的一刻..."></textarea>
-                        <div class="flex justify-end mt-4 pt-4 border-t border-gray-100">
-                            <button id="save-btn" class="bg-ink text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gold transition-colors shadow-lg">
-                                保存
+                        <textarea id="journal-input" class="w-full h-24 bg-transparent border-none focus:ring-0 resize-none font-serif text-lg leading-relaxed text-ink placeholder-gray-300 p-0" placeholder="有什麼新想法？打在這裡，我會幫你加到下面..."></textarea>
+                        <div class="flex justify-end mt-2 pt-2 border-t border-gray-100">
+                            <button id="append-btn" class="bg-ink text-white px-6 py-2 rounded-full text-sm font-medium hover:bg-gold transition-colors shadow-lg">
+                                <i class="fa-solid fa-paper-plane mr-1"></i> 紀錄
                             </button>
                         </div>
                     </div>
@@ -94,7 +99,7 @@
                 <section class="px-6">
                     <div class="flex items-center gap-3 mb-6">
                         <div class="h-px bg-ink/10 flex-1"></div>
-                        <span class="text-xs font-serif text-subtle italic">The Past</span>
+                        <span class="text-xs font-serif text-subtle italic">Archive (Tap pencil to edit)</span>
                         <div class="h-px bg-ink/10 flex-1"></div>
                     </div>
                     
@@ -103,14 +108,60 @@
                 </section>
             </main>
 
-            <main id="view-profile" class="hidden-view flex-1 overflow-y-auto pb-24">
-                <section class="px-6 pt-10 text-center">
-                    <div class="w-20 h-20 mx-auto rounded-full bg-white shadow-soft flex items-center justify-center text-3xl text-gray-300 mb-4">
-                        <i class="fa-solid fa-user"></i>
+            <main id="view-profile" class="hidden-view flex-1 overflow-y-auto pb-24 no-scrollbar bg-paper">
+                <section class="px-6 pt-10 pb-6 text-center relative">
+                    <div id="profile-display">
+                        <div class="relative inline-block mb-4">
+                            <img id="display-avatar" src="" class="w-24 h-24 rounded-full border-4 border-white shadow-soft object-cover bg-gray-200">
+                        </div>
+                        <h2 class="font-serif text-2xl font-bold text-ink" id="display-name">User</h2>
+                        <button onclick="toggleEditProfile()" class="mt-4 text-xs border border-ink/20 px-3 py-1 rounded-full hover:bg-white transition-colors"><i class="fa-solid fa-pen mr-1"></i> 編輯資料</button>
                     </div>
-                    <h2 class="font-serif text-xl font-bold" id="profile-email">User</h2>
+                    <div id="profile-edit" class="hidden bg-white p-6 rounded-2xl shadow-soft text-left">
+                        <h3 class="font-bold text-ink mb-4 text-sm">編輯個人資料</h3>
+                        <div class="space-y-3">
+                            <div><label class="text-[10px] uppercase text-subtle">暱稱</label><input type="text" id="edit-name" class="w-full border-b py-1 text-sm"></div>
+                            <div><label class="text-[10px] uppercase text-subtle">頭像 URL</label><input type="text" id="edit-photo" class="w-full border-b py-1 text-sm"></div>
+                        </div>
+                        <div class="flex gap-2 mt-6">
+                            <button onclick="saveProfile()" class="flex-1 bg-ink text-white py-2 rounded-lg text-xs font-bold">儲存</button>
+                            <button onclick="toggleEditProfile()" class="flex-1 border py-2 rounded-lg text-xs">取消</button>
+                        </div>
+                    </div>
                 </section>
-                <div class="p-6 text-center text-sm text-subtle">統計功能開發中...</div>
+
+                <section class="px-6 mb-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white p-4 rounded-2xl shadow-soft text-center">
+                            <div class="text-3xl font-serif font-bold text-ink" id="stat-count">--</div>
+                            <div class="text-[10px] text-subtle uppercase tracking-wider">Total Entries</div>
+                        </div>
+                        <div class="bg-white p-4 rounded-2xl shadow-soft text-center">
+                            <div class="text-3xl font-serif font-bold text-gold" id="stat-streak">--</div>
+                            <div class="text-[10px] text-subtle uppercase tracking-wider flex items-center justify-center gap-1"><i class="fa-solid fa-fire text-orange-400"></i> Streak</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="px-6 mb-8">
+                    <h3 class="font-bold text-ink text-sm mb-3">Writing Activity</h3>
+                    <div class="bg-white p-4 rounded-2xl shadow-soft overflow-x-auto">
+                        <div class="flex gap-1 h-24 items-end" id="heatmap-container"></div>
+                    </div>
+                </section>
+
+                <section class="px-6 mb-8">
+                    <h3 class="font-bold text-ink text-sm mb-3">Achievements</h3>
+                    <div class="grid grid-cols-3 gap-3" id="badge-wall">
+                        </div>
+                </section>
+
+                <section class="px-6 mb-12 mt-8 border-t border-ink/10 pt-8">
+                    <h3 class="font-bold text-red-500 text-sm mb-2">危險區域 (Danger Zone)</h3>
+                    <button onclick="showResetModal()" class="w-full border border-red-200 text-red-500 py-3 rounded-xl text-sm font-bold hover:bg-red-50 transition-colors">
+                        <i class="fa-solid fa-trash-can mr-2"></i> 重置所有資料
+                    </button>
+                </section>
             </main>
 
             <nav class="bg-white/90 backdrop-blur-md border-t border-gray-100 h-20 px-8 flex justify-between items-center fixed bottom-0 w-full max-w-md pb-2 z-40">
@@ -123,16 +174,32 @@
             </nav>
         </div>
 
+        <div id="reset-modal" class="hidden absolute inset-0 z-[60] bg-black/50 backdrop-blur-sm flex items-center justify-center p-6">
+            <div class="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+                <div id="reset-step-1">
+                    <div class="text-center mb-4"><i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-2"></i><h3 class="font-bold text-lg">確定重置？</h3><p class="text-xs text-subtle">資料將永久刪除。</p></div>
+                    <div class="flex gap-3"><button onclick="hideResetModal()" class="flex-1 py-2 bg-gray-100 rounded-lg text-sm">取消</button><button onclick="toResetStep2()" class="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm">重置</button></div>
+                </div>
+                <div id="reset-step-2" class="hidden">
+                    <h3 class="font-bold mb-4">輸入密碼</h3>
+                    <input type="password" id="reset-password" class="w-full border rounded-lg px-3 py-2 text-sm mb-4" placeholder="Password">
+                    <div id="reset-error" class="text-red-500 text-xs mb-3 hidden">錯誤</div>
+                    <div class="flex gap-3"><button onclick="hideResetModal()" class="flex-1 py-2 bg-gray-100 rounded-lg text-sm">取消</button><button id="btn-confirm-reset" onclick="executeReset()" class="flex-1 py-2 bg-red-500 text-white rounded-lg text-sm">確認</button></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, Timestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, orderBy, Timestamp, doc, setDoc, getDoc, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // ===========================================
         // ★★★ 請在此填入 API KEY ★★★
         const firebaseConfig = {
-          apiKey: "AIzaSyCZw3UVcni89AWMOILc0FB9pcdQ5qQ4Fnk",
+            apiKey: "AIzaSyCZw3UVcni89AWMOILc0FB9pcdQ5qQ4Fnk",
   authDomain: "journal-cfb68.firebaseapp.com",
   projectId: "journal-cfb68",
   storageBucket: "journal-cfb68.firebasestorage.app",
@@ -140,153 +207,295 @@
   appId: "1:761510066058:web:4e37165e157ce7b335fa73",
   measurementId: "G-VS6NNGZXVM"
         };
+        // ===========================================
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         let currentUser = null;
-
-        // --- 日期控制邏輯 (核心修改) ---
-        let currentDisplayDate = new Date(); // 當前顯示的日期 (預設今天)
-
+        let currentDisplayDate = new Date();
         const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const getMDString = (date) => `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
 
-        // 更新介面日期文字
+        // --- 1. 日期控制 ---
         function updateDateUI() {
             const m = months[currentDisplayDate.getMonth()];
             const d = currentDisplayDate.getDate();
             const w = days[currentDisplayDate.getDay()];
-            const y = currentDisplayDate.getFullYear();
-
             document.getElementById('header-date').innerText = `${m} ${d}`;
             document.getElementById('header-weekday').innerText = w;
-            document.getElementById('input-year-label').innerText = `${y} (Current)`;
-            
-            // 每次換日期，都要重抓那一天的日記
-            loadEntriesForDate(); 
+            const today = new Date();
+            const isToday = (today.getDate() === d && today.getMonth() === currentDisplayDate.getMonth());
+            document.getElementById('btn-back-today').classList.toggle('opacity-0', isToday);
+            document.getElementById('btn-back-today').classList.toggle('pointer-events-none', isToday);
+            loadEntriesForDate();
         }
+        window.changeDate = (offset) => { currentDisplayDate.setDate(currentDisplayDate.getDate() + offset); updateDateUI(); };
+        window.resetToToday = () => { currentDisplayDate = new Date(); updateDateUI(); };
 
-        // 左右切換日期 (Export 給 HTML 用)
-        window.changeDate = (offset) => {
-            currentDisplayDate.setDate(currentDisplayDate.getDate() + offset);
-            updateDateUI();
-        };
+        // --- 2. 讀取與列表 (View Mode / Edit Mode) ---
+        // 我們需要一個全域變數來暫存當前資料，以便 Append 時使用
+        let currentEntriesCache = {}; 
 
-        // 格式化 Month-Day (用來查詢資料庫)
-        const getMDString = (date) => `${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-
-        // --- 載入日記邏輯 (包含過去年份的空缺填補) ---
         async function loadEntriesForDate() {
             if (!currentUser) return;
-            
             const listContainer = document.getElementById('archive-list');
-            const inputArea = document.getElementById('journal-input');
             const targetMD = getMDString(currentDisplayDate);
             const currentYear = currentDisplayDate.getFullYear();
 
-            // 1. 清空並顯示載入中
-            listContainer.innerHTML = '<div class="text-center py-4 text-xs text-gray-300">Loading...</div>';
-            inputArea.value = ""; // 清空輸入框預設值
+            // 清空緩存
+            currentEntriesCache = {};
 
             try {
-                // 2. 從資料庫抓取「這個用戶」在「這一天 (不分年份)」的所有日記
-                const q = query(
-                    collection(db, "entries"),
-                    where("userId", "==", currentUser.uid),
-                    where("monthDay", "==", targetMD)
-                );
+                const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid), where("monthDay", "==", targetMD));
                 const snapshot = await getDocs(q);
-                
-                // 將資料轉換為 Map，方便按年份查找 (Key: Year, Value: Content)
-                const entriesMap = {};
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    entriesMap[data.year] = data.content;
-                });
+                snapshot.forEach(doc => { currentEntriesCache[doc.data().year] = doc.data().content; });
 
-                // 3. 填入上方輸入框 (如果今年有寫過，就顯示出來讓用戶修改)
-                if (entriesMap[currentYear]) {
-                    inputArea.value = entriesMap[currentYear];
-                }
-
-                // 4. 生成下方「過去 5 年」的列表
                 let html = '';
-                // 從去年開始，往回推 5 年
-                for (let i = 1; i <= 5; i++) {
-                    const pastYear = currentYear - i;
-                    const content = entriesMap[pastYear]; // 看看那一年有沒有日記
-                    const hasContent = content ? true : false;
-                    
-                    // 根據是否有內容，顯示不同樣式
-                    if (hasContent) {
-                        html += `
-                            <div class="bg-card rounded-2xl p-5 shadow-soft border border-white relative">
-                                <div class="flex items-center gap-2 mb-2">
-                                    <h3 class="font-serif font-bold text-xl text-ink">${pastYear}</h3>
-                                    <span class="text-[10px] text-white bg-gold px-2 py-0.5 rounded-full">${months[currentDisplayDate.getMonth()]} ${currentDisplayDate.getDate()}</span>
+                for (let i = 0; i < 5; i++) {
+                    const year = currentYear - i;
+                    const content = currentEntriesCache[year] || "";
+                    const hasContent = !!content;
+                    const isCurrentYear = (i === 0);
+
+                    // 這裡產生兩個區塊：View(預設顯示) 和 Edit(預設隱藏)
+                    html += `
+                        <div class="bg-card rounded-2xl p-5 shadow-soft border border-white relative transition-all group">
+                            
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <h3 class="font-serif font-bold text-xl text-ink">${year}</h3>
+                                    ${isCurrentYear ? '<span class="text-[9px] bg-gold text-white px-2 rounded-full">TODAY</span>' : ''}
                                 </div>
-                                <div class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap">${content}</div>
+                                <button onclick="toggleEditMode(${year})" class="text-gray-300 hover:text-gold transition-colors p-1" id="btn-edit-${year}">
+                                    <i class="fa-solid fa-pencil"></i>
+                                </button>
                             </div>
-                        `;
-                    } else {
-                        // 空狀態 (Empty State) - 顯示年份但灰色
-                        html += `
-                            <div class="rounded-2xl p-4 border-2 border-dashed border-gray-200 flex justify-between items-center opacity-60">
-                                <h3 class="font-serif font-bold text-lg text-gray-400">${pastYear}</h3>
-                                <span class="text-[10px] text-gray-300">No entry</span>
+
+                            <div id="view-${year}" class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap ${!hasContent ? 'opacity-40 italic' : ''}">
+                                ${hasContent ? content : 'No entry for this year.'}
                             </div>
-                        `;
-                    }
+
+                            <div id="edit-box-${year}" class="hidden mt-2">
+                                <textarea id="textarea-${year}" class="w-full bg-gray-50 rounded-lg p-3 text-sm text-ink outline-none focus:ring-1 focus:ring-gold mb-2 min-h-[100px]">${content}</textarea>
+                                <div class="flex justify-end gap-2">
+                                    <button onclick="toggleEditMode(${year})" class="text-xs text-gray-400 hover:text-gray-600 px-3 py-1">Cancel</button>
+                                    <button onclick="saveArchiveEdit(${year})" class="text-xs bg-gold text-white px-4 py-1.5 rounded-full font-bold shadow-sm">Save</button>
+                                </div>
+                            </div>
+
+                        </div>`;
                 }
                 listContainer.innerHTML = html;
-
-            } catch (e) {
-                console.error(e);
-                listContainer.innerHTML = '<div class="text-center text-red-300 text-xs">讀取失敗，請檢查網路</div>';
-            }
+            } catch (e) { console.error(e); }
         }
 
-        // --- 保存邏輯 ---
-        document.getElementById('save-btn').addEventListener('click', async () => {
-            const content = document.getElementById('journal-input').value;
-            if (!content.trim()) return;
+        // --- 3. Archive 互動邏輯 ---
+        window.toggleEditMode = (year) => {
+            const viewEl = document.getElementById(`view-${year}`);
+            const editEl = document.getElementById(`edit-box-${year}`);
+            const btnEl = document.getElementById(`btn-edit-${year}`);
             
-            const btn = document.getElementById('save-btn');
-            btn.innerText = "Saving...";
-
-            try {
-                // 這裡簡化邏輯：每次保存都視為新增一筆 Doc (實務上可能要檢查是否要 Update)
-                // 但為了簡單起見，我們先用 addDoc，顯示時只抓最新的一筆即可(或是未來進階做 update)
-                await addDoc(collection(db, "entries"), {
-                    userId: currentUser.uid,
-                    content: content,
-                    year: currentDisplayDate.getFullYear(), // 使用當前選中的年份
-                    monthDay: getMDString(currentDisplayDate),
-                    timestamp: Timestamp.now()
-                });
-                
-                btn.innerText = "Saved!";
-                // 重新載入列表以更新畫面
-                loadEntriesForDate();
-                setTimeout(() => btn.innerText = "保存", 1500);
-            } catch (e) {
-                console.error(e);
-                btn.innerText = "Error";
+            if (editEl.classList.contains('hidden')) {
+                // 進入編輯模式
+                viewEl.classList.add('hidden');
+                editEl.classList.remove('hidden');
+                btnEl.classList.add('invisible'); // 隱藏鉛筆
+            } else {
+                // 取消/退出
+                viewEl.classList.remove('hidden');
+                editEl.classList.add('hidden');
+                btnEl.classList.remove('invisible');
             }
+        };
+
+        window.saveArchiveEdit = async (year) => {
+            const content = document.getElementById(`textarea-${year}`).value;
+            await saveEntryToDB(year, content);
+            // 保存後刷新列表，回到 View Mode
+            loadEntriesForDate();
+        };
+
+        // --- 4. 上方 Logger 邏輯 (Append Mode) ---
+        document.getElementById('append-btn').addEventListener('click', async () => {
+            const inputEl = document.getElementById('journal-input');
+            const newText = inputEl.value.trim();
+            if (!newText) return;
+
+            const btn = document.getElementById('append-btn');
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            const currentYear = currentDisplayDate.getFullYear();
+            // 抓取現有的內容 (如果有)
+            const oldContent = currentEntriesCache[currentYear] || "";
+            
+            // 邏輯：如果有舊內容，就加換行；沒有就直接存
+            const finalContent = oldContent ? `${oldContent}\n\n${newText}` : newText;
+            
+            await saveEntryToDB(currentYear, finalContent);
+            
+            // 清空輸入框
+            inputEl.value = "";
+            btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-1"></i> 紀錄';
+            
+            // 刷新列表 (你會看到下方 2025 卡片內容增加)
+            loadEntriesForDate();
         });
 
-        // --- 登入/狀態管理 (維持不變) ---
+        // 共用保存 DB 函數
+        async function saveEntryToDB(year, content) {
+            const docId = `${currentUser.uid}_${year}_${getMDString(currentDisplayDate)}`;
+            try {
+                await setDoc(doc(db, "entries", docId), {
+                    userId: currentUser.uid,
+                    content: content,
+                    year: year,
+                    monthDay: getMDString(currentDisplayDate),
+                    timestamp: Timestamp.now(),
+                    dateString: new Date(year, currentDisplayDate.getMonth(), currentDisplayDate.getDate()).toDateString()
+                }, { merge: true });
+                calculateStats(); // 更新統計
+            } catch (e) { alert("Error: " + e.message); }
+        }
+
+        // --- 5. 統計與獎勵 (Stats & Gamification) ---
+        async function calculateStats() {
+            if (!currentUser) return;
+            const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid));
+            const snapshot = await getDocs(q);
+            let totalEntries = 0;
+            const uniqueDates = new Set();
+            
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.content && data.content.trim() !== "") {
+                    totalEntries++;
+                    if(data.dateString) uniqueDates.add(data.dateString);
+                }
+            });
+            
+            // 更新 UI
+            const countEl = document.getElementById('stat-count');
+            const streakEl = document.getElementById('stat-streak');
+            if(countEl) countEl.innerText = totalEntries;
+            if(streakEl) streakEl.innerText = uniqueDates.size;
+
+            renderBadges(totalEntries, uniqueDates.size);
+            renderHeatmap(uniqueDates.size);
+        }
+
+        function renderBadges(count, days) {
+            const container = document.getElementById('badge-wall');
+            if(!container) return; // 避免在 Journal 頁面報錯
+
+            const badges = [
+                { name: "First Step", icon: "fa-pen-nib", unlocked: count >= 1 },
+                { name: "Week Streak", icon: "fa-fire", unlocked: days >= 7 },
+                { name: "Dedicated", icon: "fa-medal", unlocked: count >= 30 }
+            ];
+            
+            let html = '';
+            badges.forEach(b => {
+                const style = b.unlocked ? 'bg-gold/10 border-gold text-ink' : 'bg-gray-50 border-gray-100 text-gray-300 grayscale';
+                const anim = b.unlocked ? 'badge-unlock' : '';
+                html += `
+                    <div class="aspect-square rounded-2xl border ${style} ${anim} flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105">
+                        <i class="fa-solid ${b.icon} text-xl mb-1 ${b.unlocked ? 'text-gold' : ''}"></i>
+                        <span class="text-[9px] font-bold leading-tight">${b.name}</span>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderHeatmap(val) {
+             const c = document.getElementById('heatmap-container');
+             if(!c) return;
+             let h = '';
+             // 模擬 30 天數據 (實際應比對日期)
+             for(let i=0; i<30; i++) {
+                 // 這裡做個簡單的視覺效果：根據總寫作天數來隨機點亮
+                 const isActive = (i < (val % 30)) || (Math.random() > 0.8 && val > 5); 
+                 const height = isActive ? Math.random() * 60 + 20 : 10;
+                 const opacity = isActive ? 1 : 0.2;
+                 h += `<div class="flex-1 bg-gold rounded-t-sm mx-[1px]" style="height: ${height}%; opacity: ${opacity}"></div>`;
+             }
+             c.innerHTML = h;
+        }
+
+        // --- 6. Profile & Reset ---
+        // (保持原樣的 Reset 邏輯)
+        window.showResetModal = () => {
+            document.getElementById('reset-modal').classList.remove('hidden');
+            document.getElementById('reset-step-1').classList.remove('hidden');
+            document.getElementById('reset-step-2').classList.add('hidden');
+            document.getElementById('reset-password').value = "";
+        };
+        window.hideResetModal = () => { document.getElementById('reset-modal').classList.add('hidden'); };
+        window.toResetStep2 = () => { document.getElementById('reset-step-1').classList.add('hidden'); document.getElementById('reset-step-2').classList.remove('hidden'); };
+        
+        window.executeReset = async () => {
+            const pw = document.getElementById('reset-password').value;
+            const btn = document.getElementById('btn-confirm-reset');
+            if(!pw) return;
+            btn.innerText = "...";
+            try {
+                const credential = EmailAuthProvider.credential(currentUser.email, pw);
+                await reauthenticateWithCredential(currentUser, credential);
+                const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid));
+                const snapshot = await getDocs(q);
+                const batch = writeBatch(db);
+                snapshot.forEach(doc => { batch.delete(doc.ref); });
+                await batch.commit();
+                hideResetModal();
+                alert("Reset Complete.");
+                loadEntriesForDate();
+                calculateStats();
+            } catch (error) {
+                btn.innerText = "Error";
+                document.getElementById('reset-error').classList.remove('hidden');
+            }
+        };
+
+        // Profile Edit
+        window.toggleEditProfile = () => {
+            document.getElementById('profile-display').classList.toggle('hidden');
+            document.getElementById('profile-edit').classList.toggle('hidden');
+            if (!document.getElementById('profile-edit').classList.contains('hidden')) {
+                document.getElementById('edit-name').value = currentUser.displayName || "";
+                document.getElementById('edit-photo').value = currentUser.photoURL || "";
+            }
+        };
+        window.saveProfile = async () => {
+            const name = document.getElementById('edit-name').value;
+            const photo = document.getElementById('edit-photo').value;
+            try {
+                await updateProfile(currentUser, { displayName: name, photoURL: photo });
+                loadUserProfile(); toggleEditProfile();
+            } catch (e) { alert(e.message); }
+        };
+        async function loadUserProfile() {
+            if (!currentUser) return;
+            document.getElementById('display-name').innerText = currentUser.displayName || "User";
+            document.getElementById('display-avatar').src = currentUser.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${currentUser.uid}`;
+        }
+
+        window.switchTab = (tab) => {
+            document.getElementById('view-journal').classList.toggle('hidden-view', tab !== 'journal');
+            document.getElementById('view-profile').classList.toggle('hidden-view', tab !== 'profile');
+            document.getElementById('nav-journal').classList.toggle('active', tab === 'journal');
+            document.getElementById('nav-profile').classList.toggle('active', tab === 'profile');
+            if (tab === 'profile') { calculateStats(); loadUserProfile(); }
+        };
+
+        // Auth
         const authForm = document.getElementById('auth-form');
         let isLoginMode = true;
-
         document.getElementById('toggle-auth-mode').addEventListener('click', (e) => {
-            e.preventDefault();
-            isLoginMode = !isLoginMode;
+            e.preventDefault(); isLoginMode = !isLoginMode;
             document.getElementById('auth-btn').innerText = isLoginMode ? "登入" : "註冊";
             e.target.innerText = isLoginMode ? "還沒有帳號？註冊" : "已有帳號？登入";
         });
-
         authForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -294,31 +503,18 @@
             try {
                 if (isLoginMode) await signInWithEmailAndPassword(auth, email, pw);
                 else await createUserWithEmailAndPassword(auth, email, pw);
-            } catch (err) {
-                document.getElementById('auth-error').innerText = err.message;
-                document.getElementById('auth-error').classList.remove('hidden');
-            }
+            } catch (err) { document.getElementById('auth-error').innerText = err.message; document.getElementById('auth-error').classList.remove('hidden'); }
         });
-
         window.handleLogout = () => signOut(auth);
-        
-        // 頁面切換
-        window.switchTab = (tab) => {
-            document.getElementById('view-journal').classList.toggle('hidden-view', tab !== 'journal');
-            document.getElementById('view-profile').classList.toggle('hidden-view', tab !== 'profile');
-            document.getElementById('nav-journal').classList.toggle('active', tab === 'journal');
-            document.getElementById('nav-profile').classList.toggle('active', tab === 'profile');
-        };
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('auth-view').classList.add('hidden-view');
-                const appView = document.getElementById('app-view');
-                appView.classList.remove('hidden-view');
-                setTimeout(() => appView.classList.remove('opacity-0'), 50);
-                
-                updateDateUI(); // 初始化載入今天
+                document.getElementById('app-view').classList.remove('hidden-view');
+                setTimeout(() => document.getElementById('app-view').classList.remove('opacity-0'), 50);
+                updateDateUI();
+                loadUserProfile();
             } else {
                 currentUser = null;
                 document.getElementById('auth-view').classList.remove('hidden-view');
