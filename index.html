@@ -67,7 +67,6 @@
             <main id="view-journal" class="flex-1 overflow-y-auto pb-24 no-scrollbar">
                 
                 <header class="relative px-4 py-4 flex justify-center items-start sticky top-0 bg-paper/95 backdrop-blur-sm z-10 border-b border-ink/5">
-                    
                     <div class="flex items-center gap-2 pt-1 z-20">
                         <button onclick="changeDate(-1)" class="w-8 h-8 flex items-center justify-center text-ink hover:text-gold bg-white rounded-full shadow-sm"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                         <div class="text-center px-1 min-w-[100px] flex flex-col items-center">
@@ -77,18 +76,13 @@
                         </div>
                         <button onclick="changeDate(1)" class="w-8 h-8 flex items-center justify-center text-ink hover:text-gold bg-white rounded-full shadow-sm"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                     </div>
-
-                    <button onclick="handleLogout()" class="absolute right-4 top-5 px-3 py-1 text-xs font-bold text-ink/40 hover:text-red-500 border border-ink/10 rounded-full transition-colors z-20">
-                        登出
-                    </button>
+                    <button onclick="handleLogout()" class="absolute right-4 top-5 px-3 py-1 text-xs font-bold text-ink/40 hover:text-red-500 border border-ink/10 rounded-full transition-colors z-20">登出</button>
                 </header>
 
                 <section class="px-6 my-6">
                     <h2 class="font-serif text-xl font-bold text-ink mb-3 pl-1">Today's Diary</h2>
-                    
                     <div class="bg-white/60 backdrop-blur-sm rounded-2xl p-4 shadow-sm border border-ink/5 focus-within:ring-2 focus-within:ring-gold/20 transition-all">
                         <textarea id="journal-input" class="w-full h-24 bg-transparent border-none focus:ring-0 resize-none font-serif text-lg leading-relaxed text-ink placeholder-ink/20 p-0" placeholder="..."></textarea>
-                        
                         <div class="flex justify-end mt-2">
                             <button id="append-btn" class="bg-ink text-white px-5 py-2 rounded-xl text-sm font-medium hover:bg-gold transition-colors shadow-lg shadow-ink/10">
                                 <i class="fa-solid fa-paper-plane mr-2"></i>記錄
@@ -103,17 +97,10 @@
                         <span class="text-xs font-serif text-subtle italic">Archive</span>
                         <div class="h-px bg-ink/10 flex-1"></div>
                     </div>
-                    
-                    <div id="archive-list" class="flex flex-col gap-4">
-                        </div>
-
+                    <div id="archive-list" class="flex flex-col gap-4"></div>
                     <div id="older-entries-container" class="mt-4 pb-10">
-                        <button id="btn-load-more" onclick="loadOlderEntries()" class="w-full py-3 border border-dashed border-ink/20 rounded-2xl text-xs text-subtle hover:text-ink hover:border-gold hover:bg-gold/5 transition-all">
-                            View Older Memories (5-10 Years)
-                        </button>
-                        
-                        <div id="archive-list-older" class="hidden flex flex-col gap-4 mt-4 fade-in">
-                            </div>
+                        <button id="btn-load-more" onclick="loadOlderEntries()" class="w-full py-3 border border-dashed border-ink/20 rounded-2xl text-xs text-subtle hover:text-ink hover:border-gold hover:bg-gold/5 transition-all">View Older Memories (5-10 Years)</button>
+                        <div id="archive-list-older" class="hidden flex flex-col gap-4 mt-4 fade-in"></div>
                     </div>
                 </section>
             </main>
@@ -128,7 +115,6 @@
                         <p class="text-xs text-subtle mt-1"><span id="display-gender">--</span> • <span id="display-age">--</span> 歲</p>
                         <button onclick="toggleEditProfile()" class="mt-4 text-xs border border-ink/20 px-3 py-1 rounded-full hover:bg-white transition-colors"><i class="fa-solid fa-pen mr-1"></i> 編輯資料</button>
                     </div>
-
                     <div id="profile-edit" class="hidden bg-white p-6 rounded-2xl shadow-soft text-left">
                         <h3 class="font-bold text-ink mb-4 text-sm">編輯個人資料</h3>
                         <div class="mb-4 text-center">
@@ -192,7 +178,7 @@
         // ===========================================
         // ★★★ 請在此填入 API KEY ★★★
         const firebaseConfig = {
-          apiKey: "AIzaSyCZw3UVcni89AWMOILc0FB9pcdQ5qQ4Fnk",
+            apiKey: "AIzaSyCZw3UVcni89AWMOILc0FB9pcdQ5qQ4Fnk",
   authDomain: "journal-cfb68.firebaseapp.com",
   projectId: "journal-cfb68",
   storageBucket: "journal-cfb68.firebasestorage.app",
@@ -215,10 +201,9 @@
         window.changeDate = (offset) => { currentDisplayDate.setDate(currentDisplayDate.getDate() + offset); updateDateUI(); };
         window.resetToToday = () => { currentDisplayDate = new Date(); updateDateUI(); };
 
-        // Entry Logic with Extended Archive
         let currentEntriesCache = {};
 
-        // 產生卡片 HTML 的通用函數
+        // 修正：將 ${hasContent...} 緊貼標籤，避免 whitespace-pre-wrap 產生多餘空白
         const generateEntryCard = (year, content, isCurrentYear) => {
             const hasContent = !!content;
             return `
@@ -232,9 +217,7 @@
                             <i class="fa-solid fa-pencil"></i>
                         </button>
                     </div>
-                    <div id="view-${year}" class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap ${!hasContent ? 'opacity-40 italic' : ''}">
-                        ${hasContent ? content : 'No entry for this year.'}
-                    </div>
+                    <div id="view-${year}" class="text-sm text-[#5C5044] leading-relaxed whitespace-pre-wrap ${!hasContent ? 'opacity-40 italic' : ''}">${hasContent ? content : 'No entry for this year.'}</div>
                     <div id="edit-box-${year}" class="hidden mt-2">
                         <textarea id="textarea-${year}" class="w-full bg-gray-50 rounded-lg p-3 text-sm text-ink outline-none focus:ring-1 focus:ring-gold mb-2 min-h-[100px]">${content}</textarea>
                         <div class="flex justify-end gap-2">
@@ -251,7 +234,6 @@
             const olderContainer = document.getElementById('archive-list-older');
             const olderBtn = document.getElementById('btn-load-more');
             
-            // 重置展開狀態
             olderContainer.innerHTML = '';
             olderContainer.classList.add('hidden');
             olderBtn.classList.remove('hidden');
@@ -266,53 +248,37 @@
                 snapshot.forEach(doc => { currentEntriesCache[doc.data().year] = doc.data().content; });
 
                 let html = '';
-                // 顯示前 5 年 (例如 2025 - 2021)
                 for (let i = 0; i < 5; i++) {
                     const year = currentYear - i;
                     const content = currentEntriesCache[year] || "";
                     html += generateEntryCard(year, content, i === 0);
                 }
                 listContainer.innerHTML = html;
-
             } catch (e) { console.error(e); }
         }
 
-        // 載入 5-10 年前的資料
         window.loadOlderEntries = () => {
             const olderContainer = document.getElementById('archive-list-older');
             const btn = document.getElementById('btn-load-more');
             const currentYear = currentDisplayDate.getFullYear();
-            
             let html = '';
-            // 顯示 6 到 10 年前
             for (let i = 5; i < 10; i++) {
                 const year = currentYear - i;
                 const content = currentEntriesCache[year] || "";
                 html += generateEntryCard(year, content, false);
             }
-            
             olderContainer.innerHTML = html;
             olderContainer.classList.remove('hidden');
-            btn.classList.add('hidden'); // 隱藏按鈕
+            btn.classList.add('hidden');
         };
 
         window.toggleEditMode = (year) => { const viewEl = document.getElementById(`view-${year}`); const editEl = document.getElementById(`edit-box-${year}`); const btnEl = document.getElementById(`btn-edit-${year}`); if (editEl.classList.contains('hidden')) { viewEl.classList.add('hidden'); editEl.classList.remove('hidden'); btnEl.classList.add('invisible'); } else { viewEl.classList.remove('hidden'); editEl.classList.add('hidden'); btnEl.classList.remove('invisible'); } };
         window.saveArchiveEdit = async (year) => { const content = document.getElementById(`textarea-${year}`).value; await saveEntryToDB(year, content); loadEntriesForDate(); };
         document.getElementById('append-btn').addEventListener('click', async () => { const inputEl = document.getElementById('journal-input'); const newText = inputEl.value.trim(); if (!newText) return; const btn = document.getElementById('append-btn'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>'; const currentYear = currentDisplayDate.getFullYear(); const oldContent = currentEntriesCache[currentYear] || ""; const finalContent = oldContent ? `${oldContent}\n\n${newText}` : newText; await saveEntryToDB(currentYear, finalContent); inputEl.value = ""; btn.innerHTML = '<i class="fa-solid fa-paper-plane mr-2"></i>記錄'; loadEntriesForDate(); });
         async function saveEntryToDB(year, content) { const docId = `${currentUser.uid}_${year}_${getMDString(currentDisplayDate)}`; try { await setDoc(doc(db, "entries", docId), { userId: currentUser.uid, content: content, year: year, monthDay: getMDString(currentDisplayDate), timestamp: Timestamp.now(), dateString: new Date(year, currentDisplayDate.getMonth(), currentDisplayDate.getDate()).toDateString() }, { merge: true }); calculateStats(); } catch (e) { alert("Error: " + e.message); } }
-        
-        async function calculateStats() {
-            if (!currentUser) return;
-            const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid));
-            const snapshot = await getDocs(q);
-            let totalEntries = 0; const uniqueDates = new Set();
-            snapshot.forEach(doc => { const data = doc.data(); if (data.content && data.content.trim() !== "") { totalEntries++; if(data.dateString) uniqueDates.add(data.dateString); } });
-            document.getElementById('stat-count').innerText = totalEntries; document.getElementById('stat-streak').innerText = uniqueDates.size;
-            renderBadges(totalEntries, uniqueDates.size);
-        }
+        async function calculateStats() { if (!currentUser) return; const q = query(collection(db, "entries"), where("userId", "==", currentUser.uid)); const snapshot = await getDocs(q); let totalEntries = 0; const uniqueDates = new Set(); snapshot.forEach(doc => { const data = doc.data(); if (data.content && data.content.trim() !== "") { totalEntries++; if(data.dateString) uniqueDates.add(data.dateString); } }); document.getElementById('stat-count').innerText = totalEntries; document.getElementById('stat-streak').innerText = uniqueDates.size; renderBadges(totalEntries, uniqueDates.size); }
         function renderBadges(count, days) { const container = document.getElementById('badge-wall'); if(!container) return; const badges = [{ name: "First Step", icon: "fa-pen-nib", unlocked: count >= 1 }, { name: "Week Streak", icon: "fa-fire", unlocked: days >= 7 }, { name: "Dedicated", icon: "fa-medal", unlocked: count >= 30 }]; let html = ''; badges.forEach(b => { const style = b.unlocked ? 'bg-gold/10 border-gold text-ink' : 'bg-gray-50 border-gray-100 text-gray-300 grayscale'; const anim = b.unlocked ? 'badge-unlock' : ''; html += `<div class="aspect-square rounded-2xl border ${style} ${anim} flex flex-col items-center justify-center p-2 text-center transition-transform hover:scale-105"><i class="fa-solid ${b.icon} text-xl mb-1 ${b.unlocked ? 'text-gold' : ''}"></i><span class="text-[9px] font-bold leading-tight">${b.name}</span></div>`; }); container.innerHTML = html; }
 
-        // Profile Logic
         window.toggleEditProfile = () => { document.getElementById('profile-display').classList.toggle('hidden'); document.getElementById('profile-edit').classList.toggle('hidden'); if (!document.getElementById('profile-edit').classList.contains('hidden')) { document.getElementById('edit-name').value = currentUser.displayName || ""; loadExtraProfileData(true); } };
         window.previewImage = (input) => { if (input.files && input.files[0]) { const reader = new FileReader(); reader.onload = function(e) { document.getElementById('preview-avatar').src = e.target.result; }; reader.readAsDataURL(input.files[0]); } };
         const compressImageToBase64 = (file) => { return new Promise((resolve, reject) => { const img = new Image(); img.src = URL.createObjectURL(file); img.onload = () => { const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d'); const MAX_SIZE = 200; let width = img.width; let height = img.height; if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } } canvas.width = width; canvas.height = height; ctx.drawImage(img, 0, 0, width, height); resolve(canvas.toDataURL('image/jpeg', 0.6)); }; img.onerror = (e) => reject(e); }); };
@@ -320,7 +286,6 @@
         async function loadExtraProfileData(fillForm = false) { try { const d = await getDoc(doc(db, "users", currentUser.uid)); if (d.exists()) { const data = d.data(); if(fillForm) { document.getElementById('edit-gender').value = data.gender || "保密"; document.getElementById('edit-age').value = data.age || ""; } else { document.getElementById('display-gender').innerText = data.gender || "保密"; document.getElementById('display-age').innerText = data.age || "--"; } if (data.avatarBase64) { const avatarEl = document.getElementById('display-avatar'); avatarEl.src = data.avatarBase64; if(fillForm) document.getElementById('preview-avatar').src = data.avatarBase64; } } } catch(e){} }
         async function loadUserProfile() { if (!currentUser) return; document.getElementById('display-name').innerText = currentUser.displayName || "User"; document.getElementById('display-avatar').src = `https://api.dicebear.com/7.x/notionists/svg?seed=${currentUser.uid}`; loadExtraProfileData(false); }
 
-        // Reset & Auth
         window.showResetModal = () => { document.getElementById('reset-modal').classList.remove('hidden'); document.getElementById('reset-step-1').classList.remove('hidden'); document.getElementById('reset-step-2').classList.add('hidden'); document.getElementById('reset-password').value = ""; };
         window.hideResetModal = () => { document.getElementById('reset-modal').classList.add('hidden'); };
         window.toResetStep2 = () => { document.getElementById('reset-step-1').classList.add('hidden'); document.getElementById('reset-step-2').classList.remove('hidden'); };
